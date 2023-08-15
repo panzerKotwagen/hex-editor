@@ -42,7 +42,7 @@ public class ByteSequence {
      * @return
      */
     public long representAsUnsigned8Bit() {
-        return (long)byteSequence[0];
+        return (byteSequence[0] & 0xFF);
     }
 
     /**
