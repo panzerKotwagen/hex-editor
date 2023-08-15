@@ -108,4 +108,12 @@ public class ByteSequence {
     public long representAsSigned64Bit() {
         return respresentAsLongNumber(8);
     }
+
+    public float representAsFloat() {
+        return Float.intBitsToFloat((int)respresentAsLongNumber(4));
+    }
+
+    public double representAsDouble() {
+        return Double.longBitsToDouble(respresentAsLongNumber(8));
+    }
 }

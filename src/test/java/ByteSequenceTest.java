@@ -140,4 +140,49 @@ public class ByteSequenceTest {
         assertEquals(new BigInteger("14540091053501105090"), byteSequence.representAsUnsigned64Bit());
         assertEquals(-3906653020208446526L, byteSequence.representAsSigned64Bit());
     }
+
+    @Test
+    void RepresentFloatPositiveBytes() {
+        byte[] testBytes = new byte[]{49, 50, 51, 32, 52, 53, 54, 32};
+        ByteSequence byteSequence = new ByteSequence(testBytes);
+        float e = 1e-45f;
+
+        float diff = byteSequence.representAsFloat() - 1.51784968e-19f;
+
+        assertTrue(diff < e);
+    }
+
+    @Test
+    void RepresentFloatNegativePositiveBytes() {
+        byte[] testBytes = new byte[]{-95, -79, -63, 9, 35, 51, 82, -16};
+        ByteSequence byteSequence = new ByteSequence(testBytes);
+        float e = 1e-45f;
+
+        float diff = byteSequence.representAsFloat() - 4.6630101e-33f;
+
+        assertTrue(diff < e);
+    }
+
+    @Test
+    void RepresentDoublePositiveBytes() {
+        byte[] testBytes = new byte[]{49, 50, 51, 32, 52, 53, 54, 32};
+        ByteSequence byteSequence = new ByteSequence(testBytes);
+        double e = 1e-150;
+
+        double diff = byteSequence.representAsDouble() - 1.6563353787836496e-153;
+
+        assertTrue(diff < e);
+    }
+
+    @Test
+    void RepresentDoubleNegativePositiveBytes() {
+        byte[] testBytes = new byte[]{-95, -79, -63, 9, 35, 51, 82, -16};
+        ByteSequence byteSequence = new ByteSequence(testBytes);
+        double e = 1e-150;
+
+        double diff = byteSequence.representAsDouble() - -1.1302178564830866e+233;
+
+        assertTrue(diff < e);
+    }
+//
 }
