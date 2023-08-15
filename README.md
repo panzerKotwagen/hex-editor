@@ -1,0 +1,1 @@
+A program that allows for manipulation with files in binary format.
