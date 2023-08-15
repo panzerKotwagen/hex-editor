@@ -41,6 +41,22 @@ public class ByteSequence {
      * Represents the first 2 bytes of the sequence as unsigned num.
      * @return
      */
+    public long representAsUnsigned8Bit() {
+        return (long)byteSequence[0];
+    }
+
+    /**
+     * Represents the first 2 bytes of the sequence as signed num.
+     * @return
+     */
+    public byte representAsSigned8Bit() {
+        return byteSequence[0];
+    }
+
+    /**
+     * Represents the first 2 bytes of the sequence as unsigned num.
+     * @return
+     */
     public long representAsUnsigned16Bit() {
         return respresentAsLongNumber(2);
     }
