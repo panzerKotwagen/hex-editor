@@ -17,6 +17,11 @@ public class ByteSequence {
     private final byte[] byteSequence = new byte[8];
 
     /**
+     * Default constructor.
+     */
+    ByteSequence() {}
+
+    /**
      * Initializes byteSequence with bytes array values. If its length
      * is greater than 8, only the first 8 values will be recorded.
      * @param bytes
@@ -28,6 +33,7 @@ public class ByteSequence {
             byteSequence[i] = bytes[i];
         }
     }
+
 
     private long respresentAsLongNumber(int byteCount) {
         long res = 0;
