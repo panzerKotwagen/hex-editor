@@ -38,7 +38,7 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first 2 bytes of the sequence as unsigned num.
+     * Represents the first byte of the sequence as unsigned num.
      * @return
      */
     public long representAsUnsigned8Bit() {
@@ -46,7 +46,7 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first 2 bytes of the sequence as signed num.
+     * Represents the first byte of the sequence as signed num.
      * @return
      */
     public byte representAsSigned8Bit() {
