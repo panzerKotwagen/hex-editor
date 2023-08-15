@@ -4,6 +4,12 @@ import java.math.BigInteger;
  * A class for working with a sequence of bytes of a length 8.
  */
 public class ByteSequence {
+    public static void main(String[] args) {
+        byte[] testBytes = new byte[] {32, 52, 53, 54, 32, 55, 56, 57};
+        ByteSequence byteSequence = new ByteSequence(testBytes);
+        BigInteger bi = byteSequence.representAsUnsigned64Bit();
+        System.out.println(bi);
+    }
 
     /**
      * Sequence of bytes written in order from left to right.
@@ -26,7 +32,7 @@ public class ByteSequence {
     private long respresentAsLongNumber(int byteCount) {
         long res = 0;
         for (int i = 0; i < byteCount; i++) {
-            res += (byteSequence[i] & 0xFF) << i;
+            res += (long)(byteSequence[i] & 0xFF) << (8 * i);
         }
         return res;
     }
@@ -68,10 +74,9 @@ public class ByteSequence {
      * @return
      */
     public BigInteger representAsUnsigned64Bit() {
-//        BigInteger UNSIGNED_LONG_MASK = BigInteger.ONE.shiftLeft(Long.SIZE).subtract(BigInteger.ONE);
-//        long unsignedLong = respresentAsLongNumber(8);
-//        BigInteger bi =  BigInteger.valueOf(unsignedLong).and(UNSIGNED_LONG_MASK);
-        return new BigInteger(1, byteSequence);
+        BigInteger UNSIGNED_LONG_MASK = BigInteger.ONE.shiftLeft(Long.SIZE).subtract(BigInteger.ONE);
+        long unsignedLong = respresentAsLongNumber(8);
+        return  BigInteger.valueOf(unsignedLong).and(UNSIGNED_LONG_MASK);
     }
 
     /**
