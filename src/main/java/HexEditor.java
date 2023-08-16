@@ -14,8 +14,8 @@ public class HexEditor {
     public static void main(String[] args) {
         HexEditor hexEditor = new HexEditor();
         hexEditor.openFile("src/test/resources/test1.txt");
-//        hexEditor.insertBytes(0, (byte) 121);
-//        hexEditor.replaceBytesWithZero(4, 1);
+        hexEditor.insertBytes(0, (byte) 121);
+        hexEditor.replaceBytesWithZero(4, 1);
         hexEditor.saveFile();
         hexEditor.closeTempFileChannel();
     }
@@ -139,5 +139,48 @@ public class HexEditor {
             }
         } while (count != -1);
         System.out.println();
+    }
+
+    /**
+     * Puts the new byte value on a given position.
+     *
+     * @param position the file position at which the replacement is to begin
+     * @param newBytes new byte value
+     * @return true if the operation was successful and false otherwise
+     */
+    public boolean insertBytes(long position, byte... newBytes) {
+        ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
+
+        try {
+            mBuf.rewind();
+            tempFileChannel.write(mBuf, position);
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Replaces a block of bytes with zeros.
+     *
+     * @param byteCount number of bytes to replace
+     * @param position  the file position at which the replacement is to begin
+     * @return true if the operation was successful and false otherwise
+     */
+    public boolean replaceBytesWithZero(int byteCount, long position) {
+        byte[] zeros = new byte[byteCount];
+        ByteBuffer mBuf = ByteBuffer.wrap(zeros);
+
+        try {
+            mBuf.rewind();
+            tempFileChannel.write(mBuf, position);
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+
+        return true;
     }
 }
