@@ -1,44 +1,64 @@
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.channels.FileChannel;
+import java.nio.file.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.READ;
 
 /**
  * The main class for working with files in binary format.
  */
 public class HexEditor {
+    public static void main(String[] args) {
+        HexEditor hexEditor = new HexEditor();
+        hexEditor.openFile("src/test/resources/test1.txt");
+//        hexEditor.insertBytes(0, (byte) 121);
+//        hexEditor.replaceBytesWithZero(4, 1);
+        hexEditor.saveFile();
+        hexEditor.closeTempFileChannel();
+    }
 
     /**
-     * A channel for working with current file.
+     * The current opened file.
      */
-    private SeekableByteChannel currentFileChannel = null;
-
+    Path currentFilePath = null;
 
     /**
-     *
-     * @param filename Name of the file.
-     * @return true if the file was opened.
+     * The path to the temporary file to edit the current opened file.
      */
-    public boolean openFile(String filename) {
-        Path filepath;
+    Path tempFilePath = null;
 
-        if (currentFileChannel != null) {
+    /**
+     * The channel for working with current temp file.
+     */
+    private FileChannel tempFileChannel = null;
+
+    /**
+     * @param path string file path
+     * @return true if the file was opened and false otherwise
+     */
+    public boolean openFile(String path) {
+        if (tempFileChannel != null) {
             System.err.println("Error open file: last file was not closed");
             return false;
         }
 
         try {
-            filepath = Paths.get(filename);
+            currentFilePath = Paths.get(path);
         } catch (InvalidPathException e) {
             System.out.println("Path Error " + e);
             return false;
         }
 
         try {
-            currentFileChannel = Files.newByteChannel(filepath);
+            tempFilePath = Files.createTempFile("temp", ".tmp");
+            Files.copy(currentFilePath, tempFilePath, REPLACE_EXISTING);
+            tempFilePath.toFile().deleteOnExit();
+
+            OpenOption[] options = new OpenOption[]{READ, WRITE};
+            tempFileChannel = (FileChannel) Files.newByteChannel(tempFilePath, options);
         } catch (IOException e) {
             System.out.println(e);
             return false;
@@ -48,11 +68,48 @@ public class HexEditor {
     }
 
     /**
+     * Close the channel connected with current temp file.
+     *
+     * @return true if the connection was closed, returns false
+     * if there is no file or IOException was raised
+     */
+    public boolean closeTempFileChannel() {
+        if (tempFileChannel == null)
+            return false;
+
+        try {
+            tempFileChannel.close();
+            tempFilePath.toFile().delete();
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+
+        tempFileChannel = null;
+        return true;
+    }
+
+    /**
+     * Copy temporary file data to current file.
+     *
+     * @return
+     */
+    boolean saveFile() {
+        try {
+            Files.copy(tempFilePath, currentFilePath, REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Prints all the file on console. If there is no file to work with
      * then doing nothing
      */
     public void readAll() {
-        if (currentFileChannel == null) return;
+        if (tempFileChannel == null) return;
 
         ByteBuffer mBuf = ByteBuffer.allocate(4096);
         int count;
@@ -60,7 +117,7 @@ public class HexEditor {
 
         do {
             try {
-                count = currentFileChannel.read(mBuf);
+                count = tempFileChannel.read(mBuf);
             } catch (IOException e) {
                 System.out.println(e);
                 return;
@@ -82,25 +139,5 @@ public class HexEditor {
             }
         } while (count != -1);
         System.out.println();
-    }
-
-    /**
-     * Close the channel connected with current file
-     * @return true if the connection was closed, returns false
-     * if there is no file or IOException was raised
-     */
-    public boolean closeCurrentFile() {
-        if (currentFileChannel == null)
-            return false;
-
-        try {
-            currentFileChannel.close();
-        } catch (IOException e) {
-            System.out.println(e);
-            return false;
-        }
-
-        currentFileChannel = null;
-        return true;
     }
 }
