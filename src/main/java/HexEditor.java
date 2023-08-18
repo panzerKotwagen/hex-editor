@@ -1,8 +1,10 @@
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 
+import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.StandardOpenOption.READ;
@@ -11,24 +13,16 @@ import static java.nio.file.StandardOpenOption.READ;
  * The main class for working with files in binary format.
  */
 public class HexEditor {
-    public static void main(String[] args) {
-        HexEditor hexEditor = new HexEditor();
-        hexEditor.openFile("src/test/resources/test1.txt");
-        hexEditor.insertBytes(0, (byte) 121);
-        hexEditor.replaceBytesWithZero(4, 1);
-        hexEditor.saveFile();
-        hexEditor.closeTempFileChannel();
-    }
 
     /**
      * The current opened file.
      */
-    Path currentFilePath = null;
+    private Path currentFilePath = null;
 
     /**
      * The path to the temporary file to edit the current opened file.
      */
-    Path tempFilePath = null;
+    private Path tempFilePath = null;
 
     /**
      * The channel for working with current temp file.
@@ -94,7 +88,7 @@ public class HexEditor {
      *
      * @return
      */
-    boolean saveFile() {
+    public boolean saveFile() {
         try {
             Files.copy(tempFilePath, currentFilePath, REPLACE_EXISTING);
         } catch (IOException e) {
@@ -171,16 +165,49 @@ public class HexEditor {
      */
     public boolean replaceBytesWithZero(int byteCount, long position) {
         byte[] zeros = new byte[byteCount];
-        ByteBuffer mBuf = ByteBuffer.wrap(zeros);
+        return insertBytes(position, zeros);
+    }
+
+    /**
+     * Finds some sequence of bytes specified by the exact value or by
+     * some mask.
+     *
+     * @param position the file position at which the replacement is to begin
+     * @return
+     */
+    public long findBytesByMask(long position, byte[] mask) {
+        MappedByteBuffer mappedByteBuffer;
+        long fileSize;
+        byte[] readBytes;
+        final int bufferSize = 1024;
 
         try {
-            mBuf.rewind();
-            tempFileChannel.write(mBuf, position);
+            fileSize = tempFileChannel.size();
         } catch (IOException e) {
             System.out.println(e);
-            return false;
+            return -1;
         }
 
-        return true;
+        for (int i = 0; i < fileSize / bufferSize + 1; i++) {
+            try {
+                mappedByteBuffer = tempFileChannel.map(READ_ONLY,
+                        position, bufferSize);
+                mappedByteBuffer.rewind();
+            } catch (IOException e) {
+                System.out.println(e);
+                return -1;
+            }
+
+            readBytes = new byte[bufferSize];
+            mappedByteBuffer.get(readBytes);
+
+            int res = ByteSequence.find(mask, readBytes);
+
+            if (res != -1) return position + res;
+
+            position += bufferSize;
+        }
+
+        return -1;
     }
 }

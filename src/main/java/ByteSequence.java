@@ -5,8 +5,6 @@ import java.util.Arrays;
  * A class for working with a sequence of bytes of given length.
  */
 public class ByteSequence {
-    public static void main(String[] args) {
-    }
 
     /**
      * Sequence of bytes written in little-endian order.
@@ -177,17 +175,17 @@ public class ByteSequence {
         return Double.longBitsToDouble(representAsLongNumber(start, 8));
     }
 
-    /**
-     * Represents a byte array as a string in hex format with leading zeros.
-     *
-     * @param bytes byte array
-     * @return string representation in hex format
-     */
-    public static String byteArrayToHexString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes)
-            sb.append(String.format("%02x", b));
-        return sb.toString();
+    public BigInteger representAsBigInteger(int length) {
+        byte[] reverse = new byte[length];
+
+        // get byte array in big-endian order
+        for (int i = length - 1; i > -1; i--) {
+            reverse[length - i - 1] = getByte(i);
+        }
+
+        BigInteger res = new BigInteger(reverse);
+
+        return res;
     }
 
     /**
@@ -199,9 +197,31 @@ public class ByteSequence {
      * specified byte array.
      */
     public static int find(byte[] mask, byte[] compared) {
-        String maskString = byteArrayToHexString(mask);
-        String comparedString = byteArrayToHexString(compared);
+        if (mask.length > compared.length)
+            return -1;
 
-        return comparedString.indexOf(maskString) / 2;
+        ByteSequence maskByteSequence = new ByteSequence(mask);
+        ByteSequence comparedByteSequence = new ByteSequence(compared);
+
+        BigInteger maskBits = maskByteSequence.representAsBigInteger(mask.length);
+        BigInteger comparedPartBits = comparedByteSequence.representAsBigInteger(mask.length);
+
+        for (int i = 0; i <= compared.length - mask.length - 1; ++i) {
+            boolean res = maskBits.compareTo(comparedPartBits) == 0;
+
+            if (res == true)
+                return i;
+
+            // shift one byte to the right removing the lower digit
+            comparedPartBits = comparedPartBits.shiftRight(8);
+
+            // insert a new byte on the left
+            BigInteger addedByte = BigInteger.valueOf(
+                    comparedByteSequence.representAsUnsigned8Bit(mask.length + i));
+            addedByte = addedByte.shiftLeft((mask.length - 1) * 8);
+            comparedPartBits = comparedPartBits.add(addedByte);
+        }
+
+        return -1;
     }
 }
