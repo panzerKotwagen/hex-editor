@@ -11,19 +11,19 @@ public class ByteSequenceTest {
 
     @Test
     void RepresentZeroReturnZero() {
-        ByteSequence byteSequence = new ByteSequence();
+        ByteSequence byteSequence = new ByteSequence(new byte[]{0});
 
-        assertEquals(0, byteSequence.representAsUnsigned8Bit());
-        assertEquals(0, byteSequence.representAsSigned8Bit());
+        assertEquals(0, byteSequence.representAsUnsigned8Bit(0));
+        assertEquals(0, byteSequence.representAsSigned8Bit(0));
 
-        assertEquals(0, byteSequence.representAsUnsigned16Bit());
-        assertEquals(0, byteSequence.representAsSigned16Bit());
+        assertEquals(0, byteSequence.representAsUnsigned16Bit(0));
+        assertEquals(0, byteSequence.representAsSigned16Bit(0));
 
-        assertEquals(0, byteSequence.representAsUnsigned32Bit());
-        assertEquals(0, byteSequence.representAsSigned32Bit());
+        assertEquals(0, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(0, byteSequence.representAsSigned32Bit(0));
 
-        assertEquals(BigInteger.valueOf(0), byteSequence.representAsUnsigned64Bit());
-        assertEquals(0, byteSequence.representAsSigned64Bit());
+        assertEquals(BigInteger.valueOf(0), byteSequence.representAsUnsigned64Bit(0));
+        assertEquals(0, byteSequence.representAsSigned64Bit(0));
 
     }
 
@@ -32,8 +32,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{57};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(57, byteSequence.representAsUnsigned8Bit());
-        assertEquals(57, byteSequence.representAsSigned8Bit());
+        assertEquals(57, byteSequence.representAsUnsigned8Bit(0));
+        assertEquals(57, byteSequence.representAsSigned8Bit(0));
     }
 
     @Test
@@ -41,8 +41,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-62};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(194, byteSequence.representAsUnsigned8Bit());
-        assertEquals(-62, byteSequence.representAsSigned8Bit());
+        assertEquals(194, byteSequence.representAsUnsigned8Bit(0));
+        assertEquals(-62, byteSequence.representAsSigned8Bit(0));
     }
 
     @Test
@@ -50,8 +50,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{56, 57};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(14648, byteSequence.representAsUnsigned16Bit());
-        assertEquals(14648, byteSequence.representAsSigned16Bit());
+        assertEquals(14648, byteSequence.representAsUnsigned16Bit(0));
+        assertEquals(14648, byteSequence.representAsSigned16Bit(0));
     }
 
     @Test
@@ -59,8 +59,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-9, -8};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(63735, byteSequence.representAsUnsigned16Bit());
-        assertEquals(-1801, byteSequence.representAsSigned16Bit());
+        assertEquals(63735, byteSequence.representAsUnsigned16Bit(0));
+        assertEquals(-1801, byteSequence.representAsSigned16Bit(0));
     }
 
     @Test
@@ -68,8 +68,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-62, -61, -60, -59};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(50114, byteSequence.representAsUnsigned16Bit());
-        assertEquals(-15422, byteSequence.representAsSigned16Bit());
+        assertEquals(50114, byteSequence.representAsUnsigned16Bit(0));
+        assertEquals(-15422, byteSequence.representAsSigned16Bit(0));
     }
 
     @Test
@@ -77,8 +77,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{21, 82, -47, -16};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(21013, byteSequence.representAsUnsigned16Bit());
-        assertEquals(21013, byteSequence.representAsSigned16Bit());
+        assertEquals(21013, byteSequence.representAsUnsigned16Bit(0));
+        assertEquals(21013, byteSequence.representAsSigned16Bit(0));
     }
 
     @Test
@@ -86,8 +86,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{32, 55, 56, 57};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(959985440, byteSequence.representAsUnsigned32Bit());
-        assertEquals(959985440, byteSequence.representAsSigned32Bit());
+        assertEquals(959985440, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(959985440, byteSequence.representAsSigned32Bit(0));
     }
 
     @Test
@@ -95,8 +95,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-62, -61, -60, -59};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(3318006722L, byteSequence.representAsUnsigned32Bit());
-        assertEquals(-976960574, byteSequence.representAsSigned32Bit());
+        assertEquals(3318006722L, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(-976960574, byteSequence.representAsSigned32Bit(0));
     }
 
     @Test
@@ -104,14 +104,14 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{21, 82, -47, -16};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(4040249877L, byteSequence.representAsUnsigned32Bit());
-        assertEquals(-254717419, byteSequence.representAsSigned32Bit());
+        assertEquals(4040249877L, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(-254717419, byteSequence.representAsSigned32Bit(0));
 
         testBytes = new byte[]{-31, 37, -15, 23};
         byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(401679841, byteSequence.representAsUnsigned32Bit());
-        assertEquals(401679841, byteSequence.representAsSigned32Bit());
+        assertEquals(401679841, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(401679841, byteSequence.representAsSigned32Bit(0));
     }
 
     @Test
@@ -119,8 +119,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-62, -61, -60, -59, -58, -57, -56, -55};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(3318006722L, byteSequence.representAsUnsigned32Bit());
-        assertEquals(-976960574, byteSequence.representAsSigned32Bit());
+        assertEquals(3318006722L, byteSequence.representAsUnsigned32Bit(0));
+        assertEquals(-976960574, byteSequence.representAsSigned32Bit(0));
     }
 
     @Test
@@ -128,8 +128,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{32, 52, 53, 54, 32, 55, 56, 57};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(BigInteger.valueOf(4123106070345626656L), byteSequence.representAsUnsigned64Bit());
-        assertEquals(4123106070345626656L, byteSequence.representAsSigned64Bit());
+        assertEquals(BigInteger.valueOf(4123106070345626656L), byteSequence.representAsUnsigned64Bit(0));
+        assertEquals(4123106070345626656L, byteSequence.representAsSigned64Bit(0));
     }
 
     @Test
@@ -137,8 +137,8 @@ public class ByteSequenceTest {
         byte[] testBytes = new byte[]{-62, -61, -60, -59, -58, -57, -56, -55};
         ByteSequence byteSequence = new ByteSequence(testBytes);
 
-        assertEquals(new BigInteger("14540091053501105090"), byteSequence.representAsUnsigned64Bit());
-        assertEquals(-3906653020208446526L, byteSequence.representAsSigned64Bit());
+        assertEquals(new BigInteger("14540091053501105090"), byteSequence.representAsUnsigned64Bit(0));
+        assertEquals(-3906653020208446526L, byteSequence.representAsSigned64Bit(0));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class ByteSequenceTest {
         ByteSequence byteSequence = new ByteSequence(testBytes);
         float e = 1e-45f;
 
-        float diff = byteSequence.representAsFloat() - 1.51784968e-19f;
+        float diff = byteSequence.representAsFloat(0) - 1.51784968e-19f;
 
         assertTrue(diff < e);
     }
@@ -158,7 +158,7 @@ public class ByteSequenceTest {
         ByteSequence byteSequence = new ByteSequence(testBytes);
         float e = 1e-45f;
 
-        float diff = byteSequence.representAsFloat() - 4.6630101e-33f;
+        float diff = byteSequence.representAsFloat(0) - 4.6630101e-33f;
 
         assertTrue(diff < e);
     }
@@ -169,7 +169,7 @@ public class ByteSequenceTest {
         ByteSequence byteSequence = new ByteSequence(testBytes);
         double e = 1e-150;
 
-        double diff = byteSequence.representAsDouble() - 1.6563353787836496e-153;
+        double diff = byteSequence.representAsDouble(0) - 1.6563353787836496e-153;
 
         assertTrue(diff < e);
     }
@@ -180,9 +180,18 @@ public class ByteSequenceTest {
         ByteSequence byteSequence = new ByteSequence(testBytes);
         double e = 1e-150;
 
-        double diff = byteSequence.representAsDouble() - -1.1302178564830866e+233;
+        double diff = byteSequence.representAsDouble(0) - -1.1302178564830866e+233;
 
         assertTrue(diff < e);
     }
-//
+
+    @Test
+    void findMaskInByteArray() {
+        byte[] mask = new byte[]{1, 0, 32, 55, 99};
+        byte[] compared = new byte[]{99, 66, 55, 4, 3, 1, 0, 5, 1, 0, 99, 66, 55,
+                4, 3, 1, 0, 5, 1, 0, 99, 66, 55, 4, 3, 1, 0, 5, 1, 0, 32, 55, 99};
+
+        assertEquals(28, ByteSequence.find(mask, compared));
+    }
+
 }

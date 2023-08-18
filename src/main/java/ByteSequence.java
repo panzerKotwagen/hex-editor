@@ -2,35 +2,32 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
- * A class for working with a sequence of bytes of a length 8.
+ * A class for working with a sequence of bytes of given length.
  */
 public class ByteSequence {
     public static void main(String[] args) {
     }
 
     /**
-     * Sequence of bytes written in order from left to right.
+     * Sequence of bytes written in little-endian order.
      */
-    private final byte[] byteSequence = new byte[8];
+    private byte[] byteSequence;
 
     /**
-     * Default constructor.
-     */
-    ByteSequence() {
-    }
-
-    /**
-     * Initializes byteSequence with bytes array values. If its length
-     * is greater than 8, only the first 8 values will be recorded.
+     * Initializes byteSequence with byte array values.
      *
      * @param bytes
      */
     ByteSequence(byte... bytes) {
+        byteSequence = new byte[bytes.length];
+
         for (int i = 0; i < bytes.length; i++) {
-            if (i > 7)
-                return;
             byteSequence[i] = bytes[i];
         }
+    }
+
+    ByteSequence(int length) {
+        byteSequence = new byte[length];
     }
 
     @Override
@@ -49,34 +46,45 @@ public class ByteSequence {
     /**
      * Returns the byte at the specified index.
      *
-     * @param pos the index of the byte
+     * @param index the index of the byte
      * @return the byte at the specified index
      */
-    public byte getByte(int pos) {
-        return byteSequence[pos];
+    public byte getByte(int index) {
+        return byteSequence[index];
+    }
+
+    public int length() {
+        return byteSequence.length;
     }
 
     /**
      * Converts a sequence of bytes to one long number.
      *
      * @param byteCount
+     * @param start     the byte position starting from which the number is calculated
      * @return
      */
-    private long respresentAsLongNumber(int byteCount) {
+    private long representAsLongNumber(int start, int byteCount) {
         long res = 0;
-        for (int i = 0; i < byteCount; i++) {
+
+        if (start + byteCount > length()) {
+            byteCount = length();
+        }
+
+        for (int i = start; i < byteCount; i++) {
             res += (long) (byteSequence[i] & 0xFF) << (8 * i);
         }
         return res;
     }
 
     /**
-     * Represents the first byte of the sequence as unsigned num.
+     * Represents the byte of the sequence as unsigned num.
      *
      * @return
      */
-    public long representAsUnsigned8Bit() {
-        return (byteSequence[0] & 0xFF);
+    public long representAsUnsigned8Bit(int index) {
+
+        return (byteSequence[index] & 0xFF);
     }
 
     /**
@@ -84,17 +92,18 @@ public class ByteSequence {
      *
      * @return
      */
-    public byte representAsSigned8Bit() {
-        return byteSequence[0];
+    public byte representAsSigned8Bit(int index) {
+        return getByte(index);
     }
 
     /**
-     * Represents the first 2 bytes of the sequence as unsigned num.
+     * Represents the 2 bytes of the sequence as unsigned num.
      *
      * @return
      */
-    public long representAsUnsigned16Bit() {
-        return respresentAsLongNumber(2);
+    public long representAsUnsigned16Bit(int start) {
+
+        return representAsLongNumber(start, 2);
     }
 
     /**
@@ -102,8 +111,9 @@ public class ByteSequence {
      *
      * @return
      */
-    public short representAsSigned16Bit() {
-        return (short) respresentAsLongNumber(2);
+    public short representAsSigned16Bit(int start) {
+
+        return (short) representAsLongNumber(start, 2);
     }
 
     /**
@@ -111,8 +121,9 @@ public class ByteSequence {
      *
      * @return
      */
-    public long representAsUnsigned32Bit() {
-        return respresentAsLongNumber(4);
+    public long representAsUnsigned32Bit(int start) {
+
+        return representAsLongNumber(start, 4);
     }
 
     /**
@@ -120,8 +131,9 @@ public class ByteSequence {
      *
      * @return
      */
-    public int representAsSigned32Bit() {
-        return (int) respresentAsLongNumber(4);
+    public int representAsSigned32Bit(int start) {
+
+        return (int) representAsLongNumber(start, 4);
     }
 
     /**
@@ -129,9 +141,9 @@ public class ByteSequence {
      *
      * @return
      */
-    public BigInteger representAsUnsigned64Bit() {
+    public BigInteger representAsUnsigned64Bit(int start) {
         BigInteger UNSIGNED_LONG_MASK = BigInteger.ONE.shiftLeft(Long.SIZE).subtract(BigInteger.ONE);
-        long unsignedLong = respresentAsLongNumber(8);
+        long unsignedLong = representAsLongNumber(start, 8);
         return BigInteger.valueOf(unsignedLong).and(UNSIGNED_LONG_MASK);
     }
 
@@ -140,22 +152,42 @@ public class ByteSequence {
      *
      * @return
      */
-    public long representAsSigned64Bit() {
-        return respresentAsLongNumber(8);
+    public long representAsSigned64Bit(int start) {
+
+        return representAsLongNumber(start, 8);
     }
 
     /**
+     * Represents the byte sequence as float num.
+     *
      * @return
      */
-    public float representAsFloat() {
-        return Float.intBitsToFloat((int) respresentAsLongNumber(4));
+    public float representAsFloat(int start) {
+
+        return Float.intBitsToFloat((int) representAsLongNumber(start, 4));
     }
 
     /**
+     * Represents the byte sequence as double num.
+     *
      * @return
      */
-    public double representAsDouble() {
-        return Double.longBitsToDouble(respresentAsLongNumber(8));
+    public double representAsDouble(int start) {
+
+        return Double.longBitsToDouble(representAsLongNumber(start, 8));
+    }
+
+    /**
+     * Represents a byte array as a string in hex format with leading zeros.
+     *
+     * @param bytes byte array
+     * @return string representation in hex format
+     */
+    public static String byteArrayToHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes)
+            sb.append(String.format("%02x", b));
+        return sb.toString();
     }
 
     /**
@@ -167,34 +199,9 @@ public class ByteSequence {
      * specified byte array.
      */
     public static int find(byte[] mask, byte[] compared) {
-        if (mask.length > compared.length)
-            return -1;
+        String maskString = byteArrayToHexString(mask);
+        String comparedString = byteArrayToHexString(compared);
 
-        if (compared.length > 8) return -1;
-
-        ByteSequence maskByteSequence = new ByteSequence(mask);
-        ByteSequence comparedByteSequence = new ByteSequence(compared);
-
-        long maskBits = maskByteSequence.representAsSigned64Bit();
-        long comparedPartBits = comparedByteSequence.representAsSigned64Bit();
-
-        long a = (long) Math.pow(2, mask.length * 8) - 1;
-        comparedPartBits = comparedPartBits & a; //cut to the size of the mask
-
-        for (int i = 0; i <= compared.length - mask.length; ++i) {
-            boolean res = (maskBits & comparedPartBits) == maskBits;
-
-            if (res == true)
-                return i;
-
-            // shift one byte to the right removing the lower digit
-            comparedPartBits = (comparedPartBits >> 8);
-
-            // insert a new byte on the left
-            byte addedByte = comparedByteSequence.getByte(mask.length + i);
-            comparedPartBits += (long) (addedByte & 0xFF) << 24;
-        }
-
-        return -1;
+        return comparedString.indexOf(maskString) / 2;
     }
 }
