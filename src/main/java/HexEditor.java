@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -35,7 +37,6 @@ public class HexEditor {
      */
     public boolean openFile(String path) {
         if (tempFileChannel != null) {
-            System.err.println("Error open file: last file was not closed");
             return false;
         }
 
@@ -46,8 +47,11 @@ public class HexEditor {
             return false;
         }
 
+        String filename = currentFilePath.getFileName().toString();
+        filename = filename.substring(0, filename.lastIndexOf("."));
+
         try {
-            tempFilePath = Files.createTempFile("temp", ".tmp");
+            tempFilePath = Files.createTempFile("~" + filename, ".tmp");
             Files.copy(currentFilePath, tempFilePath, REPLACE_EXISTING);
             tempFilePath.toFile().deleteOnExit();
 
@@ -136,13 +140,13 @@ public class HexEditor {
     }
 
     /**
-     * Puts the new byte value on a given position.
+     * Insert the new byte values on a given position with replacement.
      *
      * @param position the file position at which the replacement is to begin
-     * @param newBytes new byte value
+     * @param newBytes new byte values
      * @return true if the operation was successful and false otherwise
      */
-    public boolean insertBytes(long position, byte... newBytes) {
+    public boolean insert(long position, byte... newBytes) {
         ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
 
         try {
@@ -163,19 +167,19 @@ public class HexEditor {
      * @param position  the file position at which the replacement is to begin
      * @return true if the operation was successful and false otherwise
      */
-    public boolean replaceBytesWithZero(int byteCount, long position) {
+    public boolean insertZeros(int byteCount, long position) {
         byte[] zeros = new byte[byteCount];
-        return insertBytes(position, zeros);
+        return insert(position, zeros);
     }
 
     /**
      * Finds some sequence of bytes specified by the exact value or by
      * some mask.
      *
-     * @param position the file position at which the replacement is to begin
-     * @return
+     * @param position the file position at which the searching is to begin
+     * @return match position or -1 if it was not found
      */
-    public long findBytesByMask(long position, byte[] mask) {
+    public long findBytesByMask(long position, byte ... mask) {
         MappedByteBuffer mappedByteBuffer;
         long fileSize;
         byte[] readBytes;
@@ -209,5 +213,85 @@ public class HexEditor {
         }
 
         return -1;
+    }
+
+    /**
+     * Inserts bytes to the offset position without replacement. The data
+     * after the inserted block is shifted towards large addresses.
+     *
+     * @param offset the file position at which the adding is to begin
+     * @param content added bytes
+     * @return true if the operation was successful and false otherwise
+     */
+    public boolean add(long offset, byte... content) {
+        try {
+            RandomAccessFile r = new RandomAccessFile(tempFilePath.toFile(), "rw");
+
+            Path path = Paths.get("~temp");
+            RandomAccessFile rtemp = new RandomAccessFile(path.toFile(), "rw");
+
+            long fileSize = r.length();
+
+            FileChannel sourceChannel = r.getChannel();
+            FileChannel targetChannel = rtemp.getChannel();
+
+            sourceChannel.transferTo(offset, (fileSize - offset), targetChannel);
+            sourceChannel.truncate(offset);
+
+            r.seek(offset);
+            r.write(content);
+
+            long newOffset = r.getFilePointer();
+            targetChannel.position(0L);
+            sourceChannel.transferFrom(targetChannel, newOffset, (fileSize - offset));
+
+            sourceChannel.close();
+            targetChannel.close();
+
+            return true;
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a block of bytes with a data shift after the cut block towards
+     * smaller addresses.
+     *
+     * @param offset the file position at which the deleting is to begin
+     * @param count  deleted byte count
+     * @return true if the operation was successful and false otherwise
+     */
+    public boolean delete(long offset, long count) {
+        try {
+            RandomAccessFile r = new RandomAccessFile(tempFilePath.toFile(), "rw");
+
+            Path path = Paths.get("~temp");
+            RandomAccessFile rtemp = new RandomAccessFile(path.toFile(), "rw");
+
+            long fileSize = r.length();
+
+            FileChannel sourceChannel = r.getChannel();
+            FileChannel targetChannel = rtemp.getChannel();
+
+            sourceChannel.transferTo(offset + count, (fileSize - offset - count), targetChannel);
+            sourceChannel.truncate(offset);
+
+            r.seek(offset);
+
+            long newOffset = r.getFilePointer();
+            targetChannel.position(0L);
+            sourceChannel.transferFrom(targetChannel, newOffset, (fileSize - offset - count));
+
+            sourceChannel.close();
+            targetChannel.close();
+            path.toFile().delete();
+
+            return true;
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
     }
 }
