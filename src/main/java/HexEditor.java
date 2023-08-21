@@ -16,12 +16,12 @@ import static java.nio.file.StandardOpenOption.READ;
 public class HexEditor {
 
     /**
-     * .
+     * The Path associated with the current opened file.
      */
     private Path sourceFilePath = null;
 
     /**
-     * .
+     * The Path associated with the copy of the current opened file.
      */
     private Path tempFilePath = null;
 
@@ -40,51 +40,69 @@ public class HexEditor {
         try {
             sourceFilePath = Paths.get(path);
         } catch (InvalidPathException e) {
-            System.out.println("Path Error: " + e);
+            System.out.println(e);
             return false;
         }
 
-        String filename = sourceFilePath.getFileName().toString();
-        filename = filename.substring(0, filename.lastIndexOf("."));
-
         try {
-            tempFilePath = Files.createTempFile("~" + filename, ".tmp");
+            tempFilePath = Files.createTempFile("~", ".tmp");
             Files.copy(sourceFilePath, tempFilePath, REPLACE_EXISTING);
             tempFilePath.toFile().deleteOnExit();
         } catch (IOException e) {
             System.out.println(e);
             return false;
         }
-
         return true;
     }
 
     /**
      * Sets paths to null and deletes the temporary file.
      *
-     * @return true if the connection was closed and false is there is
-     * not opened file.
+     * @return true if the operation was successful and false
+     * otherwise
      */
     public boolean closeFile() {
         if (sourceFilePath == null)
             return false;
 
         tempFilePath.toFile().delete();
-
         sourceFilePath = null;
         tempFilePath = null;
-
         return true;
     }
 
     /**
-     * Copies temporary file data to current file.
+     * Copies the temporary file data to the current opened file.
      *
-     * @return true if changes were successfully saved to the source file
+     * @return true if changes were successfully saved to the source
+     * file
      */
     public boolean saveFile() {
         try {
             Files.copy(tempFilePath, sourceFilePath, REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Creates a new file with the temporary file data.
+     *
+     * @return true if a new file was successfully created
+     */
+    public boolean saveAsNewFile(String filename) {
+        Path newFile;
+        try {
+            newFile = Paths.get(filename);
+        } catch (InvalidPathException e) {
+            System.out.println(e);
+            return false;
+        }
+
+        try {
+            Files.copy(tempFilePath, newFile, REPLACE_EXISTING);
         } catch (IOException e) {
             System.out.println(e);
             return false;
@@ -100,18 +118,15 @@ public class HexEditor {
      * @return true if the operation was successful and false otherwise
      */
     public boolean insert(long position, byte... newBytes) {
-        ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
-        FileChannel tempFileChannel;
-
-        try {
-            tempFileChannel = (FileChannel) Files.newByteChannel(tempFilePath, WRITE);
+        try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
+                tempFilePath, WRITE)) {
+            ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
             mBuf.rewind();
             tempFileChannel.write(mBuf, position);
         } catch (IOException e) {
             System.out.println(e);
             return false;
         }
-
         return true;
     }
 
@@ -134,42 +149,39 @@ public class HexEditor {
      * @param position the file position at which the searching is to begin
      * @return match position or -1 if it was not found
      */
-    public long findBytesByMask(long position, byte ... mask) {
-        MappedByteBuffer mappedByteBuffer;
-        long fileSize;
+    public long findBytesByMask(long position, byte... mask) {
         byte[] readBytes;
-        final int bufferSize = 1024;
-        FileChannel tempFileChannel;
+        int bufferSize;
+        long fileSize;
 
-        try {
-            tempFileChannel = (FileChannel) Files.newByteChannel(
-                    tempFilePath, READ);
+        try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
+                tempFilePath, READ)) {
+
             fileSize = tempFileChannel.size();
+            bufferSize = (1024 > fileSize) ? (int)fileSize : 1024;
+
+            for (int i = 0; i < fileSize / bufferSize + 1; i++) {
+
+                //TODO: Fix java.io.IOException: Channel not open for
+                // writing - cannot extend file to required size
+                try {
+                    readBytes = read(position, bufferSize);
+                }
+                catch (NullPointerException e) {
+                    System.out.println(e);
+                    return -1;
+                }
+
+                int res = ByteSequence.find(mask, readBytes);
+
+                if (res != -1) return position + res;
+
+                position += bufferSize;
+            }
         } catch (IOException e) {
             System.out.println(e);
             return -1;
         }
-
-        for (int i = 0; i < fileSize / bufferSize + 1; i++) {
-            try {
-                mappedByteBuffer = tempFileChannel.map(
-                        READ_ONLY, position, bufferSize);
-                mappedByteBuffer.rewind();
-            } catch (IOException e) {
-                System.out.println(e);
-                return -1;
-            }
-
-            readBytes = new byte[bufferSize];
-            mappedByteBuffer.get(readBytes);
-
-            int res = ByteSequence.find(mask, readBytes);
-
-            if (res != -1) return position + res;
-
-            position += bufferSize;
-        }
-
         return -1;
     }
 
@@ -177,11 +189,11 @@ public class HexEditor {
      * Inserts bytes to the offset position without replacement. The data
      * after the inserted block is shifted towards large addresses.
      *
-     * @param offset the file position at which the adding is to begin
-     * @param content added bytes
+     * @param offset     the file position at which the adding is to begin
+     * @param addedBytes added bytes
      * @return true if the operation was successful and false otherwise
      */
-    public boolean add(long offset, byte... content) {
+    public boolean add(long offset, byte... addedBytes) {
         try {
             RandomAccessFile r = new RandomAccessFile(tempFilePath.toFile(), "rw");
 
@@ -197,7 +209,7 @@ public class HexEditor {
             sourceChannel.truncate(offset);
 
             r.seek(offset);
-            r.write(content);
+            r.write(addedBytes);
 
             long newOffset = r.getFilePointer();
             targetChannel.position(0L);
@@ -251,5 +263,32 @@ public class HexEditor {
             System.out.println(e);
             return false;
         }
+    }
+
+    /**
+     * Reads the specified number of bytes from the specified position
+     *
+     * @param position the file position at which the reading is to
+     *                 begin
+     * @param count    read byte count
+     * @return the read bytes or null if the read occurred with an
+     * error
+     */
+    public byte[] read(long position, int count) {
+        byte[] readBytes;
+
+        try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
+                tempFilePath, READ)) {
+            MappedByteBuffer mappedByteBuffer = tempFileChannel.map(
+                    READ_ONLY, position, count);
+            mappedByteBuffer.rewind();
+
+            readBytes = new byte[count];
+            mappedByteBuffer.get(readBytes);
+        } catch (IOException e) {
+            System.out.println(e);
+            return null;
+        }
+        return readBytes;
     }
 }
