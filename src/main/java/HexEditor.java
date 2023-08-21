@@ -40,7 +40,7 @@ public class HexEditor {
         try {
             sourceFilePath = Paths.get(path);
         } catch (InvalidPathException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
 
@@ -49,7 +49,7 @@ public class HexEditor {
             Files.copy(sourceFilePath, tempFilePath, REPLACE_EXISTING);
             tempFilePath.toFile().deleteOnExit();
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -81,7 +81,7 @@ public class HexEditor {
         try {
             Files.copy(tempFilePath, sourceFilePath, REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -97,14 +97,14 @@ public class HexEditor {
         try {
             newFile = Paths.get(filename);
         } catch (InvalidPathException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
 
         try {
             Files.copy(tempFilePath, newFile, REPLACE_EXISTING);
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -124,7 +124,7 @@ public class HexEditor {
             mBuf.rewind();
             tempFileChannel.write(mBuf, position);
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -151,35 +151,38 @@ public class HexEditor {
      */
     public long findBytesByMask(long position, byte... mask) {
         byte[] readBytes;
-        int bufferSize;
-        long fileSize;
+        int bufferSize = 1024 * 1024;
+        long bytesToRead;
+        int res;
 
         try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
                 tempFilePath, READ)) {
 
-            fileSize = tempFileChannel.size();
-            bufferSize = (1024 > fileSize) ? (int)fileSize : 1024;
+            bytesToRead = tempFileChannel.size();
 
-            for (int i = 0; i < fileSize / bufferSize + 1; i++) {
-
-                //TODO: Fix java.io.IOException: Channel not open for
-                // writing - cannot extend file to required size
-                try {
+            while (bytesToRead > 0) {
+                if (bytesToRead < bufferSize)
+                    readBytes = read(position, (int) bytesToRead);
+                else
                     readBytes = read(position, bufferSize);
-                }
-                catch (NullPointerException e) {
-                    System.out.println(e);
+
+                try {
+                    res = ByteSequence.find(mask, readBytes);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
                     return -1;
                 }
 
-                int res = ByteSequence.find(mask, readBytes);
-
                 if (res != -1) return position + res;
 
-                position += bufferSize;
+                // The mask length is subtracted to consider the case
+                // when the required sequence is divided between two
+                // buffers
+                position += bufferSize - mask.length;
+                bytesToRead -= bufferSize - mask.length;
             }
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return -1;
         }
         return -1;
@@ -220,7 +223,7 @@ public class HexEditor {
 
             return true;
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
     }
@@ -260,7 +263,7 @@ public class HexEditor {
 
             return true;
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return false;
         }
     }
@@ -286,7 +289,7 @@ public class HexEditor {
             readBytes = new byte[count];
             mappedByteBuffer.get(readBytes);
         } catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
             return null;
         }
         return readBytes;
