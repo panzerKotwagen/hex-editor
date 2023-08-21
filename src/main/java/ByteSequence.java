@@ -293,27 +293,4 @@ public class ByteSequence {
 
         return -1;
     }
-
-    /**
-     * Returns a dictionary of strings of all possible representations
-     * of the byte sequence from the specified number.
-     *
-     * @param start the byte position starting from which the decodings
-     *              are calculated
-     * @return
-     */
-    public HashMap<String, String> getDecodings(int start) {
-        HashMap<String, String> res = new HashMap<>();
-        res.put("Signed8Bit", String.valueOf(representAsSigned8Bit(0)));
-        res.put("Unsigned8Bit", String.valueOf(representAsUnsigned8Bit(0)));
-        res.put("Signed16Bit", String.valueOf(representAsSigned16Bit(0)));
-        res.put("Unsigned16Bit", String.valueOf(representAsUnsigned16Bit(0)));
-        res.put("Signed32Bit", String.valueOf(representAsSigned32Bit(0)));
-        res.put("Unsigned32Bit", String.valueOf(representAsUnsigned32Bit(0)));
-        res.put("Signed64Bit", String.valueOf(representAsSigned64Bit(0)));
-        res.put("Unsigned64Bit", String.valueOf(representAsUnsigned64Bit(0)));
-        res.put("Float32Bit", String.valueOf(representAsFloat(0)));
-        res.put("Double64Bit", String.valueOf(representAsDouble(0)));
-        return res;
-    }
 }
