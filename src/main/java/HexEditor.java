@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -12,51 +11,46 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.StandardOpenOption.READ;
 
 /**
- * The main class for working with files in binary format.
+ * The class that provides work with a file in binary format.
  */
 public class HexEditor {
 
     /**
-     * The current opened file.
+     * .
      */
-    private Path currentFilePath = null;
+    private Path sourceFilePath = null;
 
     /**
-     * The path to the temporary file to edit the current opened file.
+     * .
      */
     private Path tempFilePath = null;
 
-    /**
-     * The channel for working with current temp file.
-     */
-    private FileChannel tempFileChannel = null;
 
     /**
+     * Opens the file at the specified path.
+     *
      * @param path string file path
      * @return true if the file was opened and false otherwise
      */
     public boolean openFile(String path) {
-        if (tempFileChannel != null) {
+        if (sourceFilePath != null) {
             return false;
         }
 
         try {
-            currentFilePath = Paths.get(path);
+            sourceFilePath = Paths.get(path);
         } catch (InvalidPathException e) {
-            System.out.println("Path Error " + e);
+            System.out.println("Path Error: " + e);
             return false;
         }
 
-        String filename = currentFilePath.getFileName().toString();
+        String filename = sourceFilePath.getFileName().toString();
         filename = filename.substring(0, filename.lastIndexOf("."));
 
         try {
             tempFilePath = Files.createTempFile("~" + filename, ".tmp");
-            Files.copy(currentFilePath, tempFilePath, REPLACE_EXISTING);
+            Files.copy(sourceFilePath, tempFilePath, REPLACE_EXISTING);
             tempFilePath.toFile().deleteOnExit();
-
-            OpenOption[] options = new OpenOption[]{READ, WRITE};
-            tempFileChannel = (FileChannel) Files.newByteChannel(tempFilePath, options);
         } catch (IOException e) {
             System.out.println(e);
             return false;
@@ -66,77 +60,36 @@ public class HexEditor {
     }
 
     /**
-     * Close the channel connected with current temp file.
+     * Sets paths to null and deletes the temporary file.
      *
-     * @return true if the connection was closed, returns false
-     * if there is no file or IOException was raised
+     * @return true if the connection was closed and false is there is
+     * not opened file.
      */
-    public boolean closeTempFileChannel() {
-        if (tempFileChannel == null)
+    public boolean closeFile() {
+        if (sourceFilePath == null)
             return false;
 
-        try {
-            tempFileChannel.close();
-            tempFilePath.toFile().delete();
-        } catch (IOException e) {
-            System.out.println(e);
-            return false;
-        }
+        tempFilePath.toFile().delete();
 
-        tempFileChannel = null;
+        sourceFilePath = null;
+        tempFilePath = null;
+
         return true;
     }
 
     /**
-     * Copy temporary file data to current file.
+     * Copies temporary file data to current file.
      *
-     * @return
+     * @return true if changes were successfully saved to the source file
      */
     public boolean saveFile() {
         try {
-            Files.copy(tempFilePath, currentFilePath, REPLACE_EXISTING);
+            Files.copy(tempFilePath, sourceFilePath, REPLACE_EXISTING);
         } catch (IOException e) {
             System.out.println(e);
             return false;
         }
         return true;
-    }
-
-    /**
-     * Prints all the file on console. If there is no file to work with
-     * then doing nothing
-     */
-    public void readAll() {
-        if (tempFileChannel == null) return;
-
-        ByteBuffer mBuf = ByteBuffer.allocate(4096);
-        int count;
-        int offset = 0;
-
-        do {
-            try {
-                count = tempFileChannel.read(mBuf);
-            } catch (IOException e) {
-                System.out.println(e);
-                return;
-            }
-
-            if (count != -1) {
-                mBuf.rewind();
-
-                for (int i = 0; i < count; i++) {
-                    if (offset % 16 == 0) {
-                        String hexAddress = String.format("%1$08X", offset);
-                        System.out.print("\n" + hexAddress + " ");
-                    }
-
-                    byte b = mBuf.get();
-                    System.out.print(String.format("%1$02X", b) + " ");
-                    offset++;
-                }
-            }
-        } while (count != -1);
-        System.out.println();
     }
 
     /**
@@ -148,8 +101,10 @@ public class HexEditor {
      */
     public boolean insert(long position, byte... newBytes) {
         ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
+        FileChannel tempFileChannel;
 
         try {
+            tempFileChannel = (FileChannel) Files.newByteChannel(tempFilePath, WRITE);
             mBuf.rewind();
             tempFileChannel.write(mBuf, position);
         } catch (IOException e) {
@@ -184,8 +139,11 @@ public class HexEditor {
         long fileSize;
         byte[] readBytes;
         final int bufferSize = 1024;
+        FileChannel tempFileChannel;
 
         try {
+            tempFileChannel = (FileChannel) Files.newByteChannel(
+                    tempFilePath, READ);
             fileSize = tempFileChannel.size();
         } catch (IOException e) {
             System.out.println(e);
@@ -194,8 +152,8 @@ public class HexEditor {
 
         for (int i = 0; i < fileSize / bufferSize + 1; i++) {
             try {
-                mappedByteBuffer = tempFileChannel.map(READ_ONLY,
-                        position, bufferSize);
+                mappedByteBuffer = tempFileChannel.map(
+                        READ_ONLY, position, bufferSize);
                 mappedByteBuffer.rewind();
             } catch (IOException e) {
                 System.out.println(e);
