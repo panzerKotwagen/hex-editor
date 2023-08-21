@@ -194,4 +194,13 @@ public class ByteSequenceTest {
         assertEquals(28, ByteSequence.find(mask, compared));
     }
 
+    @Test
+    void findMaskInByteArray1() {
+        byte[] mask = new byte[]{66, -55, -4};
+        byte[] compared = new byte[]{99, 66, -55, -4, 3, 1, 0, 5, 1, 0, 99, 66, 55,
+                4, 3, 1, 0, 5, 1, 0, 99, 66, 55, 4, 3, 1, 0, 5, 1, 0, 32, 55, 99};
+
+        assertEquals(1, ByteSequence.find(mask, compared));
+    }
+
 }

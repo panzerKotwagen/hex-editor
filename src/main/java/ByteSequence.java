@@ -175,6 +175,11 @@ public class ByteSequence {
         return Double.longBitsToDouble(representAsLongNumber(start, 8));
     }
 
+    /**
+     * Represents the byte sequence as positive BigInteger
+     * @param length
+     * @return
+     */
     public BigInteger representAsBigInteger(int length) {
         byte[] reverse = new byte[length];
 
@@ -183,7 +188,7 @@ public class ByteSequence {
             reverse[length - i - 1] = getByte(i);
         }
 
-        BigInteger res = new BigInteger(reverse);
+        BigInteger res = new BigInteger(1, reverse);
 
         return res;
     }
@@ -206,20 +211,23 @@ public class ByteSequence {
         BigInteger maskBits = maskByteSequence.representAsBigInteger(mask.length);
         BigInteger comparedPartBits = comparedByteSequence.representAsBigInteger(mask.length);
 
-        for (int i = 0; i <= compared.length - mask.length - 1; ++i) {
-            boolean res = maskBits.compareTo(comparedPartBits) == 0;
+        if (maskBits.compareTo(comparedPartBits) == 0)
+            return 0;
 
-            if (res == true)
-                return i;
-
+        for (int i = mask.length; i < compared.length; ++i) {
             // shift one byte to the right removing the lower digit
             comparedPartBits = comparedPartBits.shiftRight(8);
 
             // insert a new byte on the left
             BigInteger addedByte = BigInteger.valueOf(
-                    comparedByteSequence.representAsUnsigned8Bit(mask.length + i));
+                    comparedByteSequence.representAsUnsigned8Bit(i));
             addedByte = addedByte.shiftLeft((mask.length - 1) * 8);
             comparedPartBits = comparedPartBits.add(addedByte);
+
+            boolean res = maskBits.compareTo(comparedPartBits) == 0;
+
+            if (res == true)
+                return i - mask.length + 1;
         }
 
         return -1;
