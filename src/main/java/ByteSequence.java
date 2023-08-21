@@ -1,6 +1,5 @@
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashMap;
 
 /**
  * The class for working with an immutable sequence of bytes of a
@@ -23,15 +22,6 @@ public class ByteSequence {
         byteSequence = new byte[bytes.length];
 
         System.arraycopy(bytes, 0, byteSequence, 0, bytes.length);
-    }
-
-    /**
-     * Constructs a new byte sequence of the given length.
-     *
-     * @param length - the length of the byte sequence
-     */
-    ByteSequence(int length) {
-        byteSequence = new byte[length];
     }
 
     /**
@@ -222,13 +212,11 @@ public class ByteSequence {
     /**
      * Represents the byte sequence as positive BigInteger
      *
-     * @param start     the byte position starting from which the
-     *                  number is calculated
      * @param byteCount the number of bytes to calculate
      * @return a calculated BigInteger
      */
-    private BigInteger representAsBigInteger(int start, int byteCount) {
-        byte[] reverse = getInBigEndianOrder(start, byteCount);
+    private BigInteger representAsBigInteger(int byteCount) {
+        byte[] reverse = getInBigEndianOrder(byteCount);
 
         return new BigInteger(1, reverse);
     }
@@ -236,15 +224,14 @@ public class ByteSequence {
     /**
      * Returns a subsequence of bytes in big-endian order.
      *
-     * @param start     the byte position of the subsequence
      * @param byteCount the number of used bytes
      * @return a byte array in big-endian order
      */
-    public byte[] getInBigEndianOrder(int start, int byteCount) {
+    private byte[] getInBigEndianOrder(int byteCount) {
         byte[] reverse = new byte[byteCount];
 
         for (int i = 0; i <= byteCount / 2; i++) {
-            byte temp = getByte(i);
+            byte temp = getByte(+ i);
             reverse[i] = getByte(byteCount - i - 1);
             reverse[byteCount - i - 1] = temp;
         }
@@ -268,9 +255,9 @@ public class ByteSequence {
         ByteSequence comparedByteSequence = new ByteSequence(compared);
 
         BigInteger maskBits = maskByteSequence
-                .representAsBigInteger(0, mask.length);
+                .representAsBigInteger(mask.length);
         BigInteger comparedPartBits = comparedByteSequence
-                .representAsBigInteger(0, mask.length);
+                .representAsBigInteger(mask.length);
 
         if (maskBits.compareTo(comparedPartBits) == 0)
             return 0;

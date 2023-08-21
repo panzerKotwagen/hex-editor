@@ -180,7 +180,7 @@ public class ByteSequenceTest {
         ByteSequence byteSequence = new ByteSequence(testBytes);
         double e = 1e-150;
 
-        double diff = byteSequence.representAsDouble(0) - -1.1302178564830866e+233;
+        double diff = byteSequence.representAsDouble(0) - 1.1302178564830866e+233;
 
         assertTrue(diff < e);
     }
