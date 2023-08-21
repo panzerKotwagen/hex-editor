@@ -1,33 +1,46 @@
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
- * A class for working with a sequence of bytes of given length.
+ * The class for working with an immutable sequence of bytes of a
+ * given length.
  */
 public class ByteSequence {
 
     /**
      * Sequence of bytes written in little-endian order.
      */
-    private byte[] byteSequence;
+    private final byte[] byteSequence;
 
     /**
-     * Initializes byteSequence with byte array values.
+     * Constructs a new byte sequence with given byte array values.
      *
-     * @param bytes
+     * @param bytes the byte array the values of which will be copied
+     *              to byte sequence
      */
-    ByteSequence(byte... bytes) {
+    ByteSequence(byte[] bytes) {
         byteSequence = new byte[bytes.length];
 
-        for (int i = 0; i < bytes.length; i++) {
-            byteSequence[i] = bytes[i];
-        }
+        System.arraycopy(bytes, 0, byteSequence, 0, bytes.length);
     }
 
+    /**
+     * Constructs a new byte sequence of the given length.
+     *
+     * @param length - the length of the byte sequence
+     */
     ByteSequence(int length) {
         byteSequence = new byte[length];
     }
 
+    /**
+     * Compares this byte sequence to the specified object.
+     *
+     * @param o the object to compare this ByteSequence against
+     * @return true if the given object represents a ByteSequence
+     * equivalent to this string, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -36,6 +49,11 @@ public class ByteSequence {
         return Arrays.equals(byteSequence, that.byteSequence);
     }
 
+    /**
+     * Returns a hash code for this byte sequence.
+     *
+     * @return a hash code value for this object
+     */
     @Override
     public int hashCode() {
         return Arrays.hashCode(byteSequence);
@@ -44,23 +62,30 @@ public class ByteSequence {
     /**
      * Returns the byte at the specified index.
      *
-     * @param index the index of the byte
-     * @return the byte at the specified index
+     * @param index the index of the byte value
+     * @return the byte value at the specified index of this byte
+     * sequence. The first byte value is at index 0.
      */
     public byte getByte(int index) {
         return byteSequence[index];
     }
 
+    /**
+     * Returns the length of this byte sequence.
+     *
+     * @return the length of the sequence
+     */
     public int length() {
         return byteSequence.length;
     }
 
     /**
-     * Converts a sequence of bytes to one long number.
+     * Represents this byte sequence as one long number.
      *
-     * @param byteCount
-     * @param start     the byte position starting from which the number is calculated
-     * @return
+     * @param start     the byte position starting from which the
+     *                  number is calculated
+     * @param byteCount the number of bytes to calculate
+     * @return a calculated long number
      */
     private long representAsLongNumber(int start, int byteCount) {
         long res = 0;
@@ -76,9 +101,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the byte of the sequence as unsigned num.
+     * Represents the byte at the specified position as unsigned num.
      *
-     * @return
+     * @param index the index of the byte value
+     * @return the byte value at the specified index represented as
+     * long number
      */
     public long representAsUnsigned8Bit(int index) {
 
@@ -86,18 +113,21 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first byte of the sequence as signed num.
+     * Represents the byte at the specified position as signed num.
      *
-     * @return
+     * @param index the index of the byte value
+     * @return the byte value at the specified index
      */
     public byte representAsSigned8Bit(int index) {
         return getByte(index);
     }
 
     /**
-     * Represents the 2 bytes of the sequence as unsigned num.
+     * Represents the 2 bytes starting from the specified position as
+     * unsigned num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the long number representing the specified bytes
      */
     public long representAsUnsigned16Bit(int start) {
 
@@ -105,9 +135,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first 2 bytes of the sequence as signed num.
+     * Represents the 2 bytes starting from the specified position as
+     * signed num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the short number representing the specified bytes
      */
     public short representAsSigned16Bit(int start) {
 
@@ -115,9 +147,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first 4 bytes of the sequence as unsigned num.
+     * Represents the 4 bytes starting from the specified position as
+     * unsigned num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the long number representing the specified bytes
      */
     public long representAsUnsigned32Bit(int start) {
 
@@ -125,9 +159,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the first 4 bytes of the sequence as signed num.
+     * Represents the 4 bytes starting from the specified position as
+     * signed num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the int number representing the specified bytes
      */
     public int representAsSigned32Bit(int start) {
 
@@ -135,9 +171,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the byte sequence as unsigned num.
+     * Represents the 8 bytes starting from the specified position as
+     * unsigned num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the BigInteger number representing the specified bytes
      */
     public BigInteger representAsUnsigned64Bit(int start) {
         BigInteger UNSIGNED_LONG_MASK = BigInteger.ONE.shiftLeft(Long.SIZE).subtract(BigInteger.ONE);
@@ -146,9 +184,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the byte sequence as signed num.
+     * Represents the 8 bytes starting from the specified position as
+     * signed num.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the long number representing the specified bytes
      */
     public long representAsSigned64Bit(int start) {
 
@@ -156,9 +196,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the byte sequence as float num.
+     * Represents the 4 bytes starting from the specified position as
+     * float number.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the float number representing the specified bytes
      */
     public float representAsFloat(int start) {
 
@@ -166,9 +208,11 @@ public class ByteSequence {
     }
 
     /**
-     * Represents the byte sequence as double num.
+     * Represents the 8 bytes starting from the specified position as
+     * double number.
      *
-     * @return
+     * @param start the index to start the calculating from
+     * @return the double number representing the specified bytes
      */
     public double representAsDouble(int start) {
 
@@ -177,20 +221,35 @@ public class ByteSequence {
 
     /**
      * Represents the byte sequence as positive BigInteger
-     * @param length
-     * @return
+     *
+     * @param start     the byte position starting from which the
+     *                  number is calculated
+     * @param byteCount the number of bytes to calculate
+     * @return a calculated BigInteger
      */
-    public BigInteger representAsBigInteger(int length) {
-        byte[] reverse = new byte[length];
+    private BigInteger representAsBigInteger(int start, int byteCount) {
+        byte[] reverse = getInBigEndianOrder(start, byteCount);
 
-        // get byte array in big-endian order
-        for (int i = length - 1; i > -1; i--) {
-            reverse[length - i - 1] = getByte(i);
+        return new BigInteger(1, reverse);
+    }
+
+    /**
+     * Returns a subsequence of bytes in big-endian order.
+     *
+     * @param start     the byte position of the subsequence
+     * @param byteCount the number of used bytes
+     * @return a byte array in big-endian order
+     */
+    public byte[] getInBigEndianOrder(int start, int byteCount) {
+        byte[] reverse = new byte[byteCount];
+
+        for (int i = 0; i <= byteCount / 2; i++) {
+            byte temp = getByte(i);
+            reverse[i] = getByte(byteCount - i - 1);
+            reverse[byteCount - i - 1] = temp;
         }
 
-        BigInteger res = new BigInteger(1, reverse);
-
-        return res;
+        return reverse;
     }
 
     /**
@@ -208,8 +267,10 @@ public class ByteSequence {
         ByteSequence maskByteSequence = new ByteSequence(mask);
         ByteSequence comparedByteSequence = new ByteSequence(compared);
 
-        BigInteger maskBits = maskByteSequence.representAsBigInteger(mask.length);
-        BigInteger comparedPartBits = comparedByteSequence.representAsBigInteger(mask.length);
+        BigInteger maskBits = maskByteSequence
+                .representAsBigInteger(0, mask.length);
+        BigInteger comparedPartBits = comparedByteSequence
+                .representAsBigInteger(0, mask.length);
 
         if (maskBits.compareTo(comparedPartBits) == 0)
             return 0;
@@ -226,10 +287,33 @@ public class ByteSequence {
 
             boolean res = maskBits.compareTo(comparedPartBits) == 0;
 
-            if (res == true)
+            if (res)
                 return i - mask.length + 1;
         }
 
         return -1;
+    }
+
+    /**
+     * Returns a dictionary of strings of all possible representations
+     * of the byte sequence from the specified number.
+     *
+     * @param start the byte position starting from which the decodings
+     *              are calculated
+     * @return
+     */
+    public HashMap<String, String> getDecodings(int start) {
+        HashMap<String, String> res = new HashMap<>();
+        res.put("Signed8Bit", String.valueOf(representAsSigned8Bit(0)));
+        res.put("Unsigned8Bit", String.valueOf(representAsUnsigned8Bit(0)));
+        res.put("Signed16Bit", String.valueOf(representAsSigned16Bit(0)));
+        res.put("Unsigned16Bit", String.valueOf(representAsUnsigned16Bit(0)));
+        res.put("Signed32Bit", String.valueOf(representAsSigned32Bit(0)));
+        res.put("Unsigned32Bit", String.valueOf(representAsUnsigned32Bit(0)));
+        res.put("Signed64Bit", String.valueOf(representAsSigned64Bit(0)));
+        res.put("Unsigned64Bit", String.valueOf(representAsUnsigned64Bit(0)));
+        res.put("Float32Bit", String.valueOf(representAsFloat(0)));
+        res.put("Double64Bit", String.valueOf(representAsDouble(0)));
+        return res;
     }
 }
