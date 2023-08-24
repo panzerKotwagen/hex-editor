@@ -9,11 +9,16 @@ import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.StandardOpenOption.READ;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The class that provides work with a file in binary format.
  */
 public class HexEditor {
+    public static void main(String[] args) {
+        HexEditor hexEditor = new HexEditor();
+
+    }
 
     /**
      * The Path associated with the current opened file.
@@ -149,7 +154,7 @@ public class HexEditor {
      * @param position the file position at which the searching is to begin
      * @return match position or -1 if it was not found
      */
-    public long findBytesByMask(long position, byte... mask) {
+    public long find(long position, byte... mask) {
         byte[] readBytes;
         int bufferSize = 1024 * 1024;
         long bytesToRead;
@@ -158,7 +163,7 @@ public class HexEditor {
         try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
                 tempFilePath, READ)) {
 
-            bytesToRead = tempFileChannel.size();
+            bytesToRead = tempFileChannel.size() - position;
 
             while (bytesToRead > 0) {
                 if (bytesToRead < bufferSize)
@@ -201,6 +206,7 @@ public class HexEditor {
             RandomAccessFile r = new RandomAccessFile(tempFilePath.toFile(), "rw");
 
             Path path = Paths.get("~temp");
+            path.toFile().deleteOnExit();
             RandomAccessFile rtemp = new RandomAccessFile(path.toFile(), "rw");
 
             long fileSize = r.length();
@@ -222,7 +228,7 @@ public class HexEditor {
             targetChannel.close();
 
             return true;
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
             return false;
         }
@@ -241,6 +247,7 @@ public class HexEditor {
             RandomAccessFile r = new RandomAccessFile(tempFilePath.toFile(), "rw");
 
             Path path = Paths.get("~temp");
+            path.toFile().deleteOnExit();
             RandomAccessFile rtemp = new RandomAccessFile(path.toFile(), "rw");
 
             long fileSize = r.length();
@@ -259,10 +266,9 @@ public class HexEditor {
 
             sourceChannel.close();
             targetChannel.close();
-            path.toFile().delete();
 
             return true;
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
             return false;
         }
@@ -288,7 +294,7 @@ public class HexEditor {
 
             readBytes = new byte[count];
             mappedByteBuffer.get(readBytes);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
             return null;
         }
