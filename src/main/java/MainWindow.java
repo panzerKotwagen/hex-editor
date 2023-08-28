@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -11,11 +12,15 @@ public class MainWindow {
 
     JToolBar toolBar;
 
+    JPanel viewFilePanel;
+
+    JPanel decodePanel;
+
     MainWindow() {
         JFrame frame = new JFrame("Menu");
 
         frame.setSize(700, 600);
-
+        frame.setMinimumSize(new Dimension(600,500));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
@@ -29,6 +34,12 @@ public class MainWindow {
         frame.add(toolBar, BorderLayout.NORTH);
 
         frame.setJMenuBar(menuBar);
+
+        decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
+
+        makeBitValuesPanel();
+
+        frame.add(decodePanel, BorderLayout.SOUTH);
 
         frame.setVisible(true);
     }
@@ -103,6 +114,35 @@ public class MainWindow {
         toolBar.add(btnClose);
         toolBar.add(btnSave);
         toolBar.add(btnSaveAs);
+    }
+
+    void makeBitValuesPanel() {
+
+
+        String[] bits = {"8", "32", "8", "32", "16", "64", "16", "64", "32", "64"};
+        String[] sign = {"Signed", "Unsigned"};
+
+        for (int i = 0; i < 8; i++) {
+            JLabel label = new JLabel(sign[i / 2 % 2] + " " + bits[i % bits.length] + " bit");
+            label.setHorizontalAlignment(JLabel.RIGHT);
+            JTextField textField = new JTextField();
+            decodePanel.add(label);
+            decodePanel.add(textField);
+        }
+
+        JLabel label = new JLabel("Float 32 bit");
+        label.setHorizontalAlignment(JLabel.RIGHT);
+        decodePanel.add(label);
+        decodePanel.add(new JTextField());
+
+        label = new JLabel("Double 64 bit");
+        label.setHorizontalAlignment(JLabel.RIGHT);
+        decodePanel.add(label);
+        decodePanel.add(new JTextField());
+    }
+
+    void makeTable() {
+
     }
 
     public static void main(String[] args) {
