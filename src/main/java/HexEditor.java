@@ -305,7 +305,7 @@ public class HexEditor {
         if (sourceFilePath == null) {
             return -1;
         }
-        
+
         try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
                 tempFilePath, READ)) {
             return tempFileChannel.size();

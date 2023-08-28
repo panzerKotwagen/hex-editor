@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
@@ -8,16 +9,46 @@ import java.awt.event.KeyEvent;
  * The class that provides GUI.
  */
 public class MainWindow {
+
+    /**
+     * Thew main frame.
+     */
+    JFrame frame;
+
+    /**
+     * The menu-bar of the main frame.
+     */
     JMenuBar menuBar;
 
+    /**
+     * The toolbar of the main frame.
+     */
     JToolBar toolBar;
 
-    JPanel viewFilePanel;
+    /**
+     * The panel for manipulation with file data.
+     */
+    JScrollPane viewFilePanel;
 
+    /**
+     * The panel on which byte decode is placed.
+     */
     JPanel decodePanel;
 
+    /**
+     * The table model in which file data is stored.
+     */
+    DefaultTableModel tableModel;
+
+    /**
+     * The class for manipulation with a file.
+     */
+    HexEditor hexEditor;
+
+    FileAction openAct;
+
     MainWindow() {
-        JFrame frame = new JFrame("Menu");
+        frame = new JFrame("Menu");
 
         frame.setSize(700, 600);
         frame.setMinimumSize(new Dimension(600,500));
@@ -25,30 +56,68 @@ public class MainWindow {
 
         menuBar = new JMenuBar();
 
+        makeFileActions();
+
         makeFileMenu();
         makeEditMenu();
         makeHelpMenu();
 
         makeToolBar();
 
+        tableModel = new DefaultTableModel();
+
+        decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
+
+        viewFilePanel = new JScrollPane();
+
+        makeBitValuesPanel();
+
         frame.add(toolBar, BorderLayout.NORTH);
 
         frame.setJMenuBar(menuBar);
 
-        decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
-
-        makeBitValuesPanel();
-
         frame.add(decodePanel, BorderLayout.SOUTH);
 
+        frame.add(viewFilePanel, BorderLayout.CENTER);
+
+        hexEditor = new HexEditor();
+
         frame.setVisible(true);
+    }
+
+    class FileAction extends AbstractAction {
+        public FileAction(String name, int mnem,
+                          int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_MASK));
+            putValue(MNEMONIC_KEY, mnem);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            if (comStr.equals("Open")) {
+                openFile();
+            }
+        }
+    }
+
+    void makeFileActions() {
+        openAct = new FileAction(
+                "Open",
+                KeyEvent.VK_S,
+                KeyEvent.VK_B,
+                "Creates a file dialog window for loading a file.");
     }
 
     void makeFileMenu() {
         JMenu menuFile = new JMenu("File");
         menuFile.setMnemonic(KeyEvent.VK_F);
 
-        JMenuItem mItemOpen = new JMenuItem("Open", KeyEvent.VK_O);
+        JMenuItem mItemOpen = new JMenuItem(openAct);
         JMenuItem mItemSave = new JMenuItem("Save", KeyEvent.VK_S);
         JMenuItem mItemSaveAs = new JMenuItem("Save As", KeyEvent.VK_S);
         JMenuItem mItemClose = new JMenuItem("Close", KeyEvent.VK_W);
@@ -105,7 +174,7 @@ public class MainWindow {
         toolBar = new JToolBar("Tools");
         toolBar.setFloatable(false);
 
-        JButton btnOpen = new JButton("O");
+        JButton btnOpen = new JButton(openAct);
         JButton btnClose = new JButton("C");
         JButton btnSave = new JButton("S");
         JButton btnSaveAs = new JButton("SA");
@@ -117,7 +186,6 @@ public class MainWindow {
     }
 
     void makeBitValuesPanel() {
-
 
         String[] bits = {"8", "32", "8", "32", "16", "64", "16", "64", "32", "64"};
         String[] sign = {"Signed", "Unsigned"};
@@ -141,8 +209,17 @@ public class MainWindow {
         decodePanel.add(new JTextField());
     }
 
-    void makeTable() {
+    void openFile() {
+        FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
+        fd.setDirectory("C:\\");
+        fd.setVisible(true);
+        String filename = fd.getFile();
 
+        if (filename == null)
+            return;
+
+        if (hexEditor.openFile(filename))
+            System.out.println("GOOD!!!");
     }
 
     public static void main(String[] args) {
