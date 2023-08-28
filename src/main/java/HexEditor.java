@@ -300,4 +300,19 @@ public class HexEditor {
         }
         return readBytes;
     }
+
+    public long getFileSize() {
+        if (sourceFilePath == null) {
+            return -1;
+        }
+        
+        try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
+                tempFilePath, READ)) {
+            return tempFileChannel.size();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
 }
