@@ -13,45 +13,49 @@ public class MainWindow {
     /**
      * Thew main frame.
      */
-    JFrame frame;
+    private JFrame frame;
 
     /**
      * The menu-bar of the main frame.
      */
-    JMenuBar menuBar;
+    private JMenuBar menuBar;
 
     /**
      * The toolbar of the main frame.
      */
-    JToolBar toolBar;
+    private JToolBar toolBar;
 
     /**
      * The panel for manipulation with file data.
      */
-    JScrollPane viewFilePanel;
+    private JScrollPane viewFilePanel;
 
     /**
      * The panel on which byte decode is placed.
      */
-    JPanel decodePanel;
+    private JPanel decodePanel;
 
     /**
      * The table model in which file data is stored.
      */
-    DefaultTableModel tableModel;
+    private DefaultTableModel tableModel;
 
     /**
      * The class for manipulation with a file.
      */
-    HexEditor hexEditor;
+    private HexEditor hexEditor;
 
-    FileAction openAct;
+    private FileAction openAct;
+    private FileAction saveAct;
+    private FileAction closeAct;
+    private FileAction saveAsNewAct;
+    private FileAction exitAct;
 
     MainWindow() {
         frame = new JFrame("Menu");
 
         frame.setSize(700, 600);
-        frame.setMinimumSize(new Dimension(600,500));
+        frame.setMinimumSize(new Dimension(600, 500));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
@@ -78,14 +82,14 @@ public class MainWindow {
 
         frame.add(decodePanel, BorderLayout.SOUTH);
 
-        frame.add(viewFilePanel, BorderLayout.CENTER);
+//        frame.add(viewFilePanel, BorderLayout.CENTER);
 
         hexEditor = new HexEditor();
 
         frame.setVisible(true);
     }
 
-    class FileAction extends AbstractAction {
+    private class FileAction extends AbstractAction {
         public FileAction(String name, int mnem,
                           int accel, String tTip) {
             super(name);
@@ -99,35 +103,71 @@ public class MainWindow {
         public void actionPerformed(ActionEvent e) {
             String comStr = e.getActionCommand();
 
-            if (comStr.equals("Open")) {
-                openFile();
+            switch (comStr) {
+                case "Open":
+                    openFile();
+                    break;
+                case "Close":
+                    closeFile();
+                    break;
+                case "Save":
+                    saveFile();
+                    break;
+                case "Save As":
+                    saveAsNewFile();
+                    break;
+                case "Exit":
+                    exit();
+                    break;
             }
         }
     }
 
-    void makeFileActions() {
+    private void makeFileActions() {
         openAct = new FileAction(
                 "Open",
-                KeyEvent.VK_S,
-                KeyEvent.VK_B,
+                KeyEvent.VK_O,
+                KeyEvent.VK_O,
                 "Creates a file dialog window for loading a file.");
+        saveAct = new FileAction(
+                "Save",
+                KeyEvent.VK_S,
+                KeyEvent.VK_S,
+                "Save the current opened file with replacement.");
+        saveAsNewAct = new FileAction(
+                "Save As",
+                KeyEvent.VK_S,
+                KeyEvent.VK_S,
+                "Creates a file dialog window for saving a new file.");
+        exitAct = new FileAction(
+                "Exit",
+                KeyEvent.VK_Q,
+                KeyEvent.VK_Q,
+                "Close the editor.");
+        closeAct = new FileAction(
+                "Close",
+                KeyEvent.VK_W,
+                KeyEvent.VK_W,
+                "Close the current opened file.");
+
+        saveAsNewAct.putValue(FileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                InputEvent.SHIFT_MASK));
+
+        // The functions are not available until a file is opened
+        saveAct.setEnabled(false);
+        saveAsNewAct.setEnabled(false);
+        closeAct.setEnabled(false);
     }
 
-    void makeFileMenu() {
+    private void makeFileMenu() {
         JMenu menuFile = new JMenu("File");
         menuFile.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem mItemOpen = new JMenuItem(openAct);
-        JMenuItem mItemSave = new JMenuItem("Save", KeyEvent.VK_S);
-        JMenuItem mItemSaveAs = new JMenuItem("Save As", KeyEvent.VK_S);
-        JMenuItem mItemClose = new JMenuItem("Close", KeyEvent.VK_W);
-        JMenuItem mItemExit = new JMenuItem("Exit", KeyEvent.VK_Q);
-
-        mItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
-        mItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
-        mItemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.SHIFT_MASK));
-        mItemClose.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_MASK));
-        mItemExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK));
+        JMenuItem mItemSave = new JMenuItem(saveAct);
+        JMenuItem mItemSaveAs = new JMenuItem(saveAsNewAct);
+        JMenuItem mItemClose = new JMenuItem(closeAct);
+        JMenuItem mItemExit = new JMenuItem(exitAct);
 
         menuFile.add(mItemOpen);
         menuFile.addSeparator();
@@ -140,7 +180,7 @@ public class MainWindow {
         menuBar.add(menuFile);
     }
 
-    void makeEditMenu() {
+    private void makeEditMenu() {
         JMenu menuEdit = new JMenu("Edit");
 
         JMenuItem mItemCopy = new JMenuItem("Copy");
@@ -162,7 +202,7 @@ public class MainWindow {
         menuBar.add(menuEdit);
     }
 
-    void makeHelpMenu() {
+    private void makeHelpMenu() {
         JMenu menuHelp = new JMenu("Help");
         JMenuItem mItemAbout = new JMenuItem("About");
         menuHelp.add(mItemAbout);
@@ -170,14 +210,14 @@ public class MainWindow {
         menuBar.add(menuHelp);
     }
 
-    void makeToolBar() {
+    private void makeToolBar() {
         toolBar = new JToolBar("Tools");
         toolBar.setFloatable(false);
 
         JButton btnOpen = new JButton(openAct);
-        JButton btnClose = new JButton("C");
-        JButton btnSave = new JButton("S");
-        JButton btnSaveAs = new JButton("SA");
+        JButton btnClose = new JButton(closeAct);
+        JButton btnSave = new JButton(saveAct);
+        JButton btnSaveAs = new JButton(saveAsNewAct);
 
         toolBar.add(btnOpen);
         toolBar.add(btnClose);
@@ -185,7 +225,7 @@ public class MainWindow {
         toolBar.add(btnSaveAs);
     }
 
-    void makeBitValuesPanel() {
+    private void makeBitValuesPanel() {
 
         String[] bits = {"8", "32", "8", "32", "16", "64", "16", "64", "32", "64"};
         String[] sign = {"Signed", "Unsigned"};
@@ -194,32 +234,97 @@ public class MainWindow {
             JLabel label = new JLabel(sign[i / 2 % 2] + " " + bits[i % bits.length] + " bit");
             label.setHorizontalAlignment(JLabel.RIGHT);
             JTextField textField = new JTextField();
+            textField.setEnabled(false);
             decodePanel.add(label);
             decodePanel.add(textField);
         }
 
         JLabel label = new JLabel("Float 32 bit");
         label.setHorizontalAlignment(JLabel.RIGHT);
+        JTextField textField = new JTextField();
+        textField.setEnabled(false);
         decodePanel.add(label);
-        decodePanel.add(new JTextField());
+        decodePanel.add(textField);
 
         label = new JLabel("Double 64 bit");
         label.setHorizontalAlignment(JLabel.RIGHT);
+        textField = new JTextField();
+        textField.setEnabled(false);
         decodePanel.add(label);
-        decodePanel.add(new JTextField());
+        decodePanel.add(textField);
     }
 
-    void openFile() {
+    /**
+     * Launches the file manager window to open an existing file.
+     */
+    private void openFile() {
         FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
         fd.setDirectory("C:\\");
         fd.setVisible(true);
+
+        String dir = fd.getDirectory();
         String filename = fd.getFile();
 
         if (filename == null)
             return;
 
-        if (hexEditor.openFile(filename))
-            System.out.println("GOOD!!!");
+        if (!hexEditor.openFile(dir + filename)) {
+            System.err.println("Error: failed to open file");
+            return;
+        }
+
+        saveAct.setEnabled(true);
+        saveAsNewAct.setEnabled(true);
+        closeAct.setEnabled(true);
+    }
+
+    /**
+     * Close the current opened file.
+     */
+    private void closeFile() {
+        if (!hexEditor.closeFile()) {
+            System.err.println("Error: failed to close file");
+            return;
+        }
+
+        saveAct.setEnabled(false);
+        saveAsNewAct.setEnabled(false);
+        closeAct.setEnabled(false);
+    }
+
+    /**
+     * Saves the current opened file.
+     */
+    private void saveFile() {
+        if (!hexEditor.saveFile()) {
+            System.err.println("Error: failed to save file");
+        }
+    }
+
+    /**
+     * Opens the file manager window to save the file as new one.
+     */
+    private void saveAsNewFile() {
+        FileDialog fd = new FileDialog(frame, "Save the file", FileDialog.SAVE);
+        fd.setVisible(true);
+
+        String dir = fd.getDirectory();
+        String filename = fd.getFile();
+
+        if (filename == null)
+            return;
+
+        if (!hexEditor.saveAsNewFile(dir + filename)) {
+            System.err.println("Error: failed to save file");
+        }
+    }
+
+    /**
+     * Close the program.
+     */
+    private void exit() {
+        closeFile();
+        System.exit(0);
     }
 
     public static void main(String[] args) {
