@@ -72,7 +72,7 @@ public class HexEditorTest {
 
     @Test
     void openNonExistingFile() {
-        assertFalse(hexEditor.openFile("src/test/resources/teASFfast1.txt"));
+        assertFalse(hexEditor.openFile("src/test/resources/teASFast1.txt"));
         hexEditor.closeFile();
     }
 
@@ -189,7 +189,7 @@ public class HexEditorTest {
     }
 
     @Test
-    void addBytesIntoNegativePostion() {
+    void addBytesIntoNegativePosition() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertFalse(hexEditor.add(-10, new byte[]{10, 15, -99}));
         hexEditor.closeFile();
@@ -205,7 +205,7 @@ public class HexEditorTest {
     @Test
     void addZeroBytes() {
         hexEditor.openFile("src/test/resources/test1.txt");
-        assertTrue(hexEditor.add(0, new byte[]{}));
+        assertTrue(hexEditor.add(0));
         hexEditor.saveAsNewFile("src/test/resources/test3.txt");
         hexEditor.closeFile();
 
