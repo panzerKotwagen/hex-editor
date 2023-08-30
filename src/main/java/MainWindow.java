@@ -51,11 +51,21 @@ public class MainWindow {
     private FileAction saveAsNewAct;
     private FileAction exitAct;
 
+    public static void setUIFont (javax.swing.plaf.FontUIResource f){
+        java.util.Enumeration keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get (key);
+            if (value instanceof javax.swing.plaf.FontUIResource)
+                UIManager.put (key, f);
+        }
+    }
+
     MainWindow() {
+        setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 20));
         frame = new JFrame("Menu");
 
-        frame.setSize(700, 600);
-        frame.setMinimumSize(new Dimension(600, 500));
+        frame.setMinimumSize(new Dimension(700, 600));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
@@ -72,7 +82,12 @@ public class MainWindow {
 
         decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
 
-        viewFilePanel = new JScrollPane();
+        JTable table = new JTable(1000000, 16);
+        table.setRowHeight(40);
+        table.setIntercellSpacing(new Dimension(10, 10));
+        table.setShowGrid(true);
+
+        viewFilePanel = new JScrollPane(table);
 
         makeBitValuesPanel();
 
@@ -80,9 +95,11 @@ public class MainWindow {
 
         frame.setJMenuBar(menuBar);
 
+        decodePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
         frame.add(decodePanel, BorderLayout.SOUTH);
 
-//        frame.add(viewFilePanel, BorderLayout.CENTER);
+        frame.add(viewFilePanel, BorderLayout.CENTER);
 
         hexEditor = new HexEditor();
 
@@ -323,7 +340,8 @@ public class MainWindow {
      * Close the program.
      */
     private void exit() {
-        closeFile();
+        if (closeAct.isEnabled())
+            closeFile();
         System.exit(0);
     }
 
