@@ -292,6 +292,22 @@ public class MainWindow {
         saveAct.setEnabled(true);
         saveAsNewAct.setEnabled(true);
         closeAct.setEnabled(true);
+
+        FileTableModel tableModel = new FileTableModel();
+
+        byte[] data = hexEditor.read(0, (int) hexEditor.getFileSize());
+        tableModel.setDataSource(data);
+
+        JTable table = new JTable(tableModel);
+
+        table.setRowHeight(40);
+        table.getColumnModel().getColumn(0).setPreferredWidth(110);
+        table.setIntercellSpacing(new Dimension(10, 10));
+        table.setShowGrid(false);
+
+        viewFilePanel.setViewportView(table);
+
+        SwingUtilities.updateComponentTreeUI(frame);
     }
 
     /**
@@ -303,9 +319,12 @@ public class MainWindow {
             return;
         }
 
+        viewFilePanel.getViewport().remove(0);
         saveAct.setEnabled(false);
         saveAsNewAct.setEnabled(false);
         closeAct.setEnabled(false);
+
+        SwingUtilities.updateComponentTreeUI(frame);
     }
 
     /**

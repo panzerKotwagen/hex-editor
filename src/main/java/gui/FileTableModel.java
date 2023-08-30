@@ -8,7 +8,7 @@ import java.util.IllegalFormatConversionException;
  * Describes TableModel used to display contents of a file. The number
  * of columns is limited to 16.
  */
-public class MyTableModel extends AbstractTableModel {
+public class FileTableModel extends AbstractTableModel {
 
     /**
      * Stores the file data. First column is an offset column, others
