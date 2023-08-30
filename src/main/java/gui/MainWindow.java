@@ -1,9 +1,13 @@
+package gui;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+
+import editor.HexEditor;
 
 /**
  * The class that provides GUI.
@@ -51,13 +55,13 @@ public class MainWindow {
     private FileAction saveAsNewAct;
     private FileAction exitAct;
 
-    public static void setUIFont (javax.swing.plaf.FontUIResource f){
+    public static void setUIFont(javax.swing.plaf.FontUIResource f) {
         java.util.Enumeration keys = UIManager.getDefaults().keys();
         while (keys.hasMoreElements()) {
             Object key = keys.nextElement();
-            Object value = UIManager.get (key);
+            Object value = UIManager.get(key);
             if (value instanceof javax.swing.plaf.FontUIResource)
-                UIManager.put (key, f);
+                UIManager.put(key, f);
         }
     }
 
@@ -82,12 +86,7 @@ public class MainWindow {
 
         decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
 
-        JTable table = new JTable(1000000, 16);
-        table.setRowHeight(40);
-        table.setIntercellSpacing(new Dimension(10, 10));
-        table.setShowGrid(true);
-
-        viewFilePanel = new JScrollPane(table);
+        viewFilePanel = new JScrollPane();
 
         makeBitValuesPanel();
 
@@ -296,7 +295,7 @@ public class MainWindow {
     }
 
     /**
-     * Close the current opened file.
+     * Closes the current opened file.
      */
     private void closeFile() {
         if (!hexEditor.closeFile()) {
@@ -337,7 +336,7 @@ public class MainWindow {
     }
 
     /**
-     * Close the program.
+     * Closes the program.
      */
     private void exit() {
         if (closeAct.isEnabled())

@@ -1,3 +1,5 @@
+package editor;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -18,7 +20,7 @@ public class ByteSequence {
      * @param bytes the byte array the values of which will be copied
      *              to byte sequence
      */
-    ByteSequence(byte[] bytes) {
+    public ByteSequence(byte[] bytes) {
         byteSequence = new byte[bytes.length];
 
         System.arraycopy(bytes, 0, byteSequence, 0, bytes.length);
