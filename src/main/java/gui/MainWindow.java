@@ -293,7 +293,7 @@ public class MainWindow {
         saveAsNewAct.setEnabled(true);
         closeAct.setEnabled(true);
 
-        FileTableModel tableModel = new FileTableModel();
+        FileTableModel tableModel = new FileTableModel(17);
 
         byte[] data = hexEditor.read(0, (int) hexEditor.getFileSize());
         tableModel.setDataSource(data);
