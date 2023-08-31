@@ -5,6 +5,7 @@ import editor.HexEditor;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Enumeration;
 
 /**
  * The class that provides GUI.
@@ -36,17 +37,21 @@ public class MainWindow {
      */
     private JPanel decodePanel;
 
-    /**
-     * The table model in which file data is stored.
-     */
-    private FileTableModel tableModel;
 
-    private JTable table;
+    /**
+     * The table in which file data is displayed.
+     */
+    private FileTable fileTable;
 
     /**
      * The class for manipulation with a file.
      */
     private HexEditor hexEditor;
+
+    /**
+     * A variable indicating whether the file is open or not.
+     */
+    private boolean fileIsOpened = false;
 
     private FileAction openAct;
     private FileAction saveAct;
@@ -54,11 +59,12 @@ public class MainWindow {
     private FileAction saveAsNewAct;
     private FileAction exitAct;
 
-    private static final int OFFSET_COLUMN_WIDTH = 120;
-    private static final int BYTE_COLUMN_WIDTH = 50;
-
+    /**
+     * Sets the specified font for every component.
+     * @param f new font
+     */
     public static void setUIFont(javax.swing.plaf.FontUIResource f) {
-        java.util.Enumeration keys = UIManager.getDefaults().keys();
+        Enumeration<Object> keys = UIManager.getDefaults().keys();
         while (keys.hasMoreElements()) {
             Object key = keys.nextElement();
             Object value = UIManager.get(key);
@@ -67,25 +73,14 @@ public class MainWindow {
         }
     }
 
-    // TODO: fix NullPointer ex when there is no visible table
-    public void updateTableView() {
-        int frameWidth = frame.getBounds().width;
-        int columnCount = (frameWidth - OFFSET_COLUMN_WIDTH
-                - viewFilePanel.getVerticalScrollBar().getWidth())
-                / BYTE_COLUMN_WIDTH;
-        tableModel.setColumnCount(columnCount);
-
-        table.getColumnModel().getColumn(0).setPreferredWidth(OFFSET_COLUMN_WIDTH);
-        for (int i = 1; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(BYTE_COLUMN_WIDTH);
-        }
-    }
-
+    /**
+     * Initialize the application window.
+     */
     MainWindow() {
         setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 20));
+
         frame = new JFrame("Hex editor");
-        frame.setMinimumSize(new Dimension(OFFSET_COLUMN_WIDTH
-                + BYTE_COLUMN_WIDTH * 16 + 20, 600));
+        frame.setMinimumSize(new Dimension(600, 600));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
@@ -116,16 +111,22 @@ public class MainWindow {
 
         hexEditor = new HexEditor();
 
+        // monitors the window resizing events for the table redrawing
         frame.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
-                updateTableView();
+                if (fileIsOpened) {
+                    fileTable.updateTableView(frame.getBounds().width);
+                }
             }
         });
 
         frame.setVisible(true);
-
     }
 
+    /**
+     * The Action class for the default file operations: Open,
+     * Close, Save, Exit.
+     */
     private class FileAction extends AbstractAction {
         public FileAction(String name, int mnem,
                           int accel, String tTip) {
@@ -160,6 +161,9 @@ public class MainWindow {
         }
     }
 
+    /**
+     * Creates the FileAction objects.
+     */
     private void makeFileActions() {
         openAct = new FileAction(
                 "Open",
@@ -191,11 +195,13 @@ public class MainWindow {
                 InputEvent.SHIFT_MASK));
 
         // The functions are not available until a file is opened
-        saveAct.setEnabled(false);
-        saveAsNewAct.setEnabled(false);
-        closeAct.setEnabled(false);
+        unblockFileButtons(false);
     }
 
+    /**
+     * Makes submenu File of the menu bar. Each menu item is
+     * associated with appropriate FileAction.
+     */
     private void makeFileMenu() {
         JMenu menuFile = new JMenu("File");
         menuFile.setMnemonic(KeyEvent.VK_F);
@@ -217,6 +223,9 @@ public class MainWindow {
         menuBar.add(menuFile);
     }
 
+    /**
+     * Makes submenu Edit of the menu bar.
+     */
     private void makeEditMenu() {
         JMenu menuEdit = new JMenu("Edit");
 
@@ -239,6 +248,9 @@ public class MainWindow {
         menuBar.add(menuEdit);
     }
 
+    /**
+     * Makes submenu Help of the menu bar.
+     */
     private void makeHelpMenu() {
         JMenu menuHelp = new JMenu("Help");
         JMenuItem mItemAbout = new JMenuItem("About");
@@ -247,6 +259,10 @@ public class MainWindow {
         menuBar.add(menuHelp);
     }
 
+    /**
+     * Makes the toolbar. Each button is associated with appropriate
+     * Action.
+     */
     private void makeToolBar() {
         toolBar = new JToolBar("Tools");
         toolBar.setFloatable(false);
@@ -262,6 +278,9 @@ public class MainWindow {
         toolBar.add(btnSaveAs);
     }
 
+    /**
+     * Makes the panel on which bit represent values are placed on.
+     */
     private void makeBitValuesPanel() {
 
         String[] bits = {"8", "32", "8", "32", "16", "64", "16", "64", "32", "64"};
@@ -292,6 +311,13 @@ public class MainWindow {
     }
 
     /**
+     * Updates the application window to display the changed elements.
+     */
+    private void updateFrame() {
+        SwingUtilities.updateComponentTreeUI(frame);
+    }
+
+    /**
      * Launches the file manager window to open an existing file.
      */
     private void openFile() {
@@ -310,56 +336,65 @@ public class MainWindow {
             return;
         }
 
-        saveAct.setEnabled(true);
-        saveAsNewAct.setEnabled(true);
-        closeAct.setEnabled(true);
+        unblockFileButtons(true);
 
-        createTable(16);
+        fileIsOpened = true;
+
+        createTable();
     }
 
-    private void createTable(int columnCount) {
-        tableModel = new FileTableModel(columnCount);
+    /**
+     * Sets whether the Save and Close actions are enabled.
+     * @param newValue true to enable, false to disable
+     */
+    private void unblockFileButtons(boolean newValue) {
+        saveAct.setEnabled(newValue);
+        saveAsNewAct.setEnabled(newValue);
+        closeAct.setEnabled(newValue);
+    }
+
+    private void createTable() {
+        FileTableModel tableModel = new FileTableModel(16);
 
         byte[] data = hexEditor.read(0, (int) hexEditor.getFileSize());
+
         tableModel.setDataSource(data);
 
-        table = new JTable(tableModel);
+        fileTable = new FileTable(tableModel);
 
-        table.setRowHeight(40);
-        table.getColumnModel().getColumn(0).setPreferredWidth(120);
-        table.setIntercellSpacing(new Dimension(10, 10));
-        table.setShowGrid(false);
-        for (int i = 1; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(50);
-        }
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        fileTable.updateTableView(frame.getBounds().width);
 
-        viewFilePanel.setViewportView(table);
+        viewFilePanel.setViewportView(fileTable);
 
-        SwingUtilities.updateComponentTreeUI(frame);
+        updateFrame();
     }
 
     /**
      * Closes the current opened file.
      */
     private void closeFile() {
+        if (!fileIsOpened)
+            return;
+
         if (!hexEditor.closeFile()) {
             System.err.println("Error: failed to close file");
             return;
         }
 
         viewFilePanel.getViewport().remove(0);
-        saveAct.setEnabled(false);
-        saveAsNewAct.setEnabled(false);
-        closeAct.setEnabled(false);
 
-        SwingUtilities.updateComponentTreeUI(frame);
+        unblockFileButtons(false);
+
+        updateFrame();
     }
 
     /**
      * Saves the current opened file.
      */
     private void saveFile() {
+        if (!fileIsOpened)
+            return;
+
         if (!hexEditor.saveFile()) {
             System.err.println("Error: failed to save file");
         }
@@ -369,6 +404,9 @@ public class MainWindow {
      * Opens the file manager window to save the file as new one.
      */
     private void saveAsNewFile() {
+        if (!fileIsOpened)
+            return;
+
         FileDialog fd = new FileDialog(frame, "Save the file", FileDialog.SAVE);
         fd.setVisible(true);
 
@@ -387,7 +425,7 @@ public class MainWindow {
      * Closes the program.
      */
     private void exit() {
-        if (closeAct.isEnabled())
+        if (fileIsOpened)
             closeFile();
         System.exit(0);
     }
