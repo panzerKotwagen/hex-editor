@@ -1,13 +1,10 @@
 package gui;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-
 import editor.HexEditor;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 /**
  * The class that provides GUI.
@@ -42,7 +39,9 @@ public class MainWindow {
     /**
      * The table model in which file data is stored.
      */
-    private DefaultTableModel tableModel;
+    private FileTableModel tableModel;
+
+    private JTable table;
 
     /**
      * The class for manipulation with a file.
@@ -55,6 +54,9 @@ public class MainWindow {
     private FileAction saveAsNewAct;
     private FileAction exitAct;
 
+    private static final int OFFSET_COLUMN_WIDTH = 120;
+    private static final int BYTE_COLUMN_WIDTH = 50;
+
     public static void setUIFont(javax.swing.plaf.FontUIResource f) {
         java.util.Enumeration keys = UIManager.getDefaults().keys();
         while (keys.hasMoreElements()) {
@@ -65,11 +67,25 @@ public class MainWindow {
         }
     }
 
+    // TODO: fix NullPointer ex when there is no visible table
+    public void updateTableView() {
+        int frameWidth = frame.getBounds().width;
+        int columnCount = (frameWidth - OFFSET_COLUMN_WIDTH
+                - viewFilePanel.getVerticalScrollBar().getWidth())
+                / BYTE_COLUMN_WIDTH;
+        tableModel.setColumnCount(columnCount);
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(OFFSET_COLUMN_WIDTH);
+        for (int i = 1; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(BYTE_COLUMN_WIDTH);
+        }
+    }
+
     MainWindow() {
         setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 20));
-        frame = new JFrame("Menu");
-
-        frame.setMinimumSize(new Dimension(700, 600));
+        frame = new JFrame("Hex editor");
+        frame.setMinimumSize(new Dimension(OFFSET_COLUMN_WIDTH
+                + BYTE_COLUMN_WIDTH * 16 + 20, 600));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
@@ -81,8 +97,6 @@ public class MainWindow {
         makeHelpMenu();
 
         makeToolBar();
-
-        tableModel = new DefaultTableModel();
 
         decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
 
@@ -102,7 +116,14 @@ public class MainWindow {
 
         hexEditor = new HexEditor();
 
+        frame.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent componentEvent) {
+                updateTableView();
+            }
+        });
+
         frame.setVisible(true);
+
     }
 
     private class FileAction extends AbstractAction {
@@ -293,17 +314,25 @@ public class MainWindow {
         saveAsNewAct.setEnabled(true);
         closeAct.setEnabled(true);
 
-        FileTableModel tableModel = new FileTableModel(17);
+        createTable(16);
+    }
+
+    private void createTable(int columnCount) {
+        tableModel = new FileTableModel(columnCount);
 
         byte[] data = hexEditor.read(0, (int) hexEditor.getFileSize());
         tableModel.setDataSource(data);
 
-        JTable table = new JTable(tableModel);
+        table = new JTable(tableModel);
 
         table.setRowHeight(40);
-        table.getColumnModel().getColumn(0).setPreferredWidth(110);
+        table.getColumnModel().getColumn(0).setPreferredWidth(120);
         table.setIntercellSpacing(new Dimension(10, 10));
         table.setShowGrid(false);
+        for (int i = 1; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(50);
+        }
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         viewFilePanel.setViewportView(table);
 
