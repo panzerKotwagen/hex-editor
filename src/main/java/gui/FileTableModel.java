@@ -79,7 +79,7 @@ public class FileTableModel extends AbstractTableModel {
         try {
             // -1 is subtracted because offset is not stored in the data
             return String.format("%02X",
-                    data.get(rowIndex * (getColumnCount() - 1) + columnIndex));
+                    data.get(rowIndex * (getColumnCount() - 1) + columnIndex - 1));
         } catch (IndexOutOfBoundsException e) {
             // If there is no bytes return empty string.
             // It is necessary to fill with empty strings those cells
