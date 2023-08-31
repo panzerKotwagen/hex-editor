@@ -2,17 +2,15 @@ package gui;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
-import java.util.IllegalFormatConversionException;
 
 /**
  * Describes TableModel with dynamic column count used to display
- * contents of a file. Stores the entire file content.
+ * contents of a file.
  */
 public class FileTableModel extends AbstractTableModel {
 
     /**
-     * Stores the file data. First column is an offset column, others
-     * are byte columns.
+     * Stores the file data.
      */
     private final ArrayList<Object> data = new ArrayList<>();
 
@@ -22,12 +20,14 @@ public class FileTableModel extends AbstractTableModel {
     private int columnCount;
 
     /**
-     * Creates the TableModel with the specified column count.
+     * Creates the TableModel with the specified column count
+     * allocated for displaying bytes.
      * The first column is always assigned to the offset.
-     * @param columnCount - the column count of the model
+     *
+     * @param byteColumnCount - the byte column count of the model
      */
-    public FileTableModel(int columnCount) {
-        this.columnCount = columnCount;
+    public FileTableModel(int byteColumnCount) {
+        this.columnCount = byteColumnCount + 1;
     }
 
     /**
@@ -52,12 +52,14 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Sets the column count of the TableModel. Also notifies all
-     * listeners that the table's structure has changed.
-     * @param columnCount - new column count.
+     * Sets the column count allocated for displaying bytes of the
+     * TableModel. Also notifies all listeners that the table's
+     * structure has changed.
+     *
+     * @param byteColumnCount - new byte column count
      */
-    public void setColumnCount(int columnCount) {
-        this.columnCount = columnCount;
+    public void setColumnCount(int byteColumnCount) {
+        this.columnCount = byteColumnCount + 1;
         fireTableStructureChanged();
     }
 
@@ -71,12 +73,17 @@ public class FileTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex == 0) {
-            return data.get(rowIndex * getColumnCount());
+            // Return calculated offset
+            return String.format("%08X", rowIndex * (getColumnCount() - 1));
         }
         try {
-            return String.format("%02X", data.get(
-                    rowIndex * getColumnCount() + columnIndex));
-        } catch (IllegalFormatConversionException e) {
+            // -1 is subtracted because offset is not stored in the data
+            return String.format("%02X",
+                    data.get(rowIndex * (getColumnCount() - 1) + columnIndex));
+        } catch (IndexOutOfBoundsException e) {
+            // If there is no bytes return empty string.
+            // It is necessary to fill with empty strings those cells
+            // of the last row for which there are not enough bytes.
             return "";
         }
     }
@@ -117,24 +124,12 @@ public class FileTableModel extends AbstractTableModel {
     public void setDataSource(byte[] fileData) {
         int bytesToRead = fileData.length;
         int pos = 0;
-
         data.clear();
 
-        while (bytesToRead > 0) {
-            // Inserts into first column the offset value
-            data.add(String.format("%08X", pos));
-
-            for (int j = 0; j < getColumnCount() - 1; j++) {
-                try {
-                    data.add(fileData[pos + j]);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    data.add("");
-                }
-            }
-
-            pos += getColumnCount() - 1;
-            bytesToRead -= getColumnCount() - 1;
+        while (pos < bytesToRead) {
+            data.add(fileData[pos++]);
         }
+
         fireTableStructureChanged();
     }
 }
