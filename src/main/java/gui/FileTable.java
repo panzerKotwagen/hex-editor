@@ -26,6 +26,9 @@ public class FileTable extends JTable {
         this.setIntercellSpacing(new Dimension(10, 10));
         this.setShowGrid(false);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        this.setCellSelectionEnabled(true);
+        this.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        this.getColumnModel().setSelectionModel(new ColumnSelectionModel());
 
         setColumnsWidth();
     }
@@ -62,4 +65,26 @@ public class FileTable extends JTable {
                     BYTE_COLUMN_WIDTH);
         }
     }
+
+    /**
+     * The ListSelectionModel in which it is forbidden to select the
+     * first column.
+     */
+    private static class ColumnSelectionModel extends DefaultListSelectionModel {
+        @Override
+        public void setSelectionInterval(int index0, int index1) {
+            if (index0 == 0) {
+                if (index1 != 0)
+                    index0 = 1;
+                else
+                    return;
+            }
+            else if (index1 == 0)
+                return;
+
+            super.setSelectionInterval(index0, index1);
+        }
+    }
 }
+
+
