@@ -4,8 +4,8 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 
 /**
- * Describes TableModel with dynamic column count used to display
- * contents of a file.
+ * Describes TableModel with dynamic column count provides displaying
+ * contents of a file in binary format.
  */
 public class FileTableModel extends AbstractTableModel {
 
@@ -64,7 +64,10 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the value at the specified cell.
+     * Returns the string represent of the byte value at the specified
+     * cell. If there is no byte at the given position return empty string.
+     * If the columnIndex equals to 0 return calculated offset
+     * which value depends on current column count in the model.
      *
      * @param rowIndex    the row whose value is to be queried
      * @param columnIndex the column whose value is to be queried
@@ -131,5 +134,31 @@ public class FileTableModel extends AbstractTableModel {
         }
 
         fireTableStructureChanged();
+    }
+
+    /**
+     * Returns true if the cell at row and column is editable.
+     * Otherwise, invoking setValueAt on the cell will have no effect.
+     *
+     * @param row    the row whose value is to be queried
+     * @param column the column whose value is to be queried
+     * @return true if the cell is editable
+     */
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        if (column == 0)
+            return false;
+
+        return super.isCellEditable(row, column);
+    }
+
+    /**
+     * Returns the byte value from model data at the specified index.
+     *
+     * @param index byte index
+     * @return the byte value at the specified index
+     */
+    public byte getValueByIndex(int index) {
+        return (Byte) data.get(index);
     }
 }

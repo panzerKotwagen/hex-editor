@@ -1,11 +1,13 @@
 package gui;
 
+import editor.ByteSequence;
 import editor.HexEditor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 /**
  * The class that provides GUI.
@@ -15,12 +17,12 @@ public class MainWindow {
     /**
      * Thew main frame.
      */
-    private JFrame frame;
+    private final JFrame frame;
 
     /**
      * The menu-bar of the main frame.
      */
-    private JMenuBar menuBar;
+    private final JMenuBar menuBar;
 
     /**
      * The toolbar of the main frame.
@@ -30,13 +32,12 @@ public class MainWindow {
     /**
      * The panel for manipulation with file data.
      */
-    private JScrollPane viewFilePanel;
+    private final JScrollPane viewFilePanel;
 
     /**
      * The panel on which byte decode is placed.
      */
-    private JPanel decodePanel;
-
+    private final JPanel decodePanel;
 
     /**
      * The table in which file data is displayed.
@@ -46,32 +47,26 @@ public class MainWindow {
     /**
      * The class for manipulation with a file.
      */
-    private HexEditor hexEditor;
+    private final HexEditor hexEditor;
 
     /**
      * A variable indicating whether the file is open or not.
      */
     private boolean fileIsOpened = false;
 
+    private final HashMap<String, JTextField> textFields = new HashMap<>();
+
+    private final String[] labelTexts = {
+            "Signed 8 bit", "Signed 32 bit", "Unsigned 8 bit",
+            "Unsigned 32 bit", "Signed 16 bit", "Signed 64 bit",
+            "Unsigned 16 bit", "Unsigned 64 bit", "Float 32 bit",
+            "Double 64 bit"};
+
     private FileAction openAct;
     private FileAction saveAct;
     private FileAction closeAct;
     private FileAction saveAsNewAct;
     private FileAction exitAct;
-
-    /**
-     * Sets the specified font for every component.
-     * @param f new font
-     */
-    public static void setUIFont(javax.swing.plaf.FontUIResource f) {
-        Enumeration<Object> keys = UIManager.getDefaults().keys();
-        while (keys.hasMoreElements()) {
-            Object key = keys.nextElement();
-            Object value = UIManager.get(key);
-            if (value instanceof javax.swing.plaf.FontUIResource)
-                UIManager.put(key, f);
-        }
-    }
 
     /**
      * Initialize the application window.
@@ -111,7 +106,7 @@ public class MainWindow {
 
         hexEditor = new HexEditor();
 
-        // monitors the window resizing events for the table redrawing
+        // Monitors the window resizing events for the table redrawing
         frame.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
                 if (fileIsOpened) {
@@ -124,41 +119,22 @@ public class MainWindow {
     }
 
     /**
-     * The Action class for the default file operations: Open,
-     * Close, Save, Exit.
+     * Sets the specified font for every component.
+     *
+     * @param f new font
      */
-    private class FileAction extends AbstractAction {
-        public FileAction(String name, int mnem,
-                          int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_MASK));
-            putValue(MNEMONIC_KEY, mnem);
-            putValue(SHORT_DESCRIPTION, tTip);
+    public static void setUIFont(javax.swing.plaf.FontUIResource f) {
+        Enumeration<Object> keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value instanceof javax.swing.plaf.FontUIResource)
+                UIManager.put(key, f);
         }
+    }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Open":
-                    openFile();
-                    break;
-                case "Close":
-                    closeFile();
-                    break;
-                case "Save":
-                    saveFile();
-                    break;
-                case "Save As":
-                    saveAsNewFile();
-                    break;
-                case "Exit":
-                    exit();
-                    break;
-            }
-        }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(MainWindow::new);
     }
 
     /**
@@ -282,32 +258,16 @@ public class MainWindow {
      * Makes the panel on which bit represent values are placed on.
      */
     private void makeBitValuesPanel() {
-
-        String[] bits = {"8", "32", "8", "32", "16", "64", "16", "64", "32", "64"};
-        String[] sign = {"Signed", "Unsigned"};
-
-        for (int i = 0; i < 8; i++) {
-            JLabel label = new JLabel(sign[i / 2 % 2] + " " + bits[i % bits.length] + " bit");
+        for (int i = 0; i < 10; i++) {
+            JLabel label = new JLabel(labelTexts[i]);
             label.setHorizontalAlignment(JLabel.RIGHT);
             JTextField textField = new JTextField();
             textField.setEnabled(false);
+            textField.setDisabledTextColor(Color.BLACK);
+            textFields.put(labelTexts[i], textField);
             decodePanel.add(label);
             decodePanel.add(textField);
         }
-
-        JLabel label = new JLabel("Float 32 bit");
-        label.setHorizontalAlignment(JLabel.RIGHT);
-        JTextField textField = new JTextField();
-        textField.setEnabled(false);
-        decodePanel.add(label);
-        decodePanel.add(textField);
-
-        label = new JLabel("Double 64 bit");
-        label.setHorizontalAlignment(JLabel.RIGHT);
-        textField = new JTextField();
-        textField.setEnabled(false);
-        decodePanel.add(label);
-        decodePanel.add(textField);
     }
 
     /**
@@ -345,6 +305,7 @@ public class MainWindow {
 
     /**
      * Sets whether the Save and Close actions are enabled.
+     *
      * @param newValue true to enable, false to disable
      */
     private void unblockFileButtons(boolean newValue) {
@@ -353,6 +314,9 @@ public class MainWindow {
         closeAct.setEnabled(newValue);
     }
 
+    /**
+     * Creates and display the table with the opened file data.
+     */
     private void createTable() {
         FileTableModel tableModel = new FileTableModel(16);
 
@@ -364,9 +328,63 @@ public class MainWindow {
 
         fileTable.updateTableView(frame.getBounds().width);
 
+        fileTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                fileTable.updateSelectedCellIndex();
+                fillBitPanel();
+            }
+        });
+
         viewFilePanel.setViewportView(fileTable);
 
         updateFrame();
+    }
+
+    /**
+     * Fills the bit represent panel with the values of byte block.
+     * The byte block is a sequence of bytes starting from the
+     * selected byte and 7 more to the right of it.
+     */
+    private void fillBitPanel() {
+        FileTableModel model = (FileTableModel) fileTable.getModel();
+        byte[] array = new byte[8];
+
+        for (int i = 0; i < 8; i++) {
+            try {
+                array[i] = model.getValueByIndex(fileTable.selectedRowIndexStart
+                        * (fileTable.getColumnCount() - 1)
+                        + fileTable.selectedColIndexStart - 1 + i);
+            }
+            // If the number of bytes in the file starting from the
+            // selected position is less than 8
+            catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+
+        ByteSequence byteSequence = new ByteSequence(array);
+
+        textFields.get("Signed 8 bit").setText(String.valueOf(
+                byteSequence.representAsSigned8Bit(0)));
+        textFields.get("Unsigned 8 bit").setText(String.valueOf(
+                byteSequence.representAsUnsigned8Bit(0)));
+        textFields.get("Signed 16 bit").setText(String.valueOf(
+                byteSequence.representAsSigned16Bit(0)));
+        textFields.get("Unsigned 16 bit").setText(String.valueOf(
+                byteSequence.representAsUnsigned16Bit(0)));
+        textFields.get("Signed 32 bit").setText(String.valueOf(
+                byteSequence.representAsSigned32Bit(0)));
+        textFields.get("Unsigned 32 bit").setText(String.valueOf(
+                byteSequence.representAsUnsigned32Bit(0)));
+        textFields.get("Signed 64 bit").setText(String.valueOf(
+                byteSequence.representAsSigned64Bit(0)));
+        textFields.get("Unsigned 64 bit").setText(String.valueOf(
+                byteSequence.representAsUnsigned64Bit(0)));
+        textFields.get("Float 32 bit").setText(String.valueOf(
+                byteSequence.representAsFloat(0)));
+        textFields.get("Double 64 bit").setText(String.valueOf(
+                byteSequence.representAsDouble(0)));
     }
 
     /**
@@ -430,7 +448,41 @@ public class MainWindow {
         System.exit(0);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainWindow::new);
+    /**
+     * The Action class for the default file operations: Open,
+     * Close, Save, Exit.
+     */
+    private class FileAction extends AbstractAction {
+        public FileAction(String name, int mnem,
+                          int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_MASK));
+            putValue(MNEMONIC_KEY, mnem);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Open":
+                    openFile();
+                    break;
+                case "Close":
+                    closeFile();
+                    break;
+                case "Save":
+                    saveFile();
+                    break;
+                case "Save As":
+                    saveAsNewFile();
+                    break;
+                case "Exit":
+                    exit();
+                    break;
+            }
+        }
     }
 }
