@@ -3,14 +3,12 @@ package editor;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -121,23 +119,37 @@ public class HexEditor {
     /**
      * Reads the specified number of bytes from the specified position
      *
-     * @param position the file position at which the reading is to
+     * @param offset the file position at which the reading is to
      *                 begin
      * @param count    read byte count
      * @return the read bytes or null if the read occurred with an
      * error
      */
-    public byte[] read(long position, int count) {
-        byte[] readBytes;
+    public byte[] read(long offset, int count) {
+        if (offset >= getFileSize() || count < 0)
+            return null;
+
+        if (offset + count > getFileSize())
+            count = (int)(getFileSize() - offset);
+
+        byte[] readBytes = new byte[count];
 
         try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
                 tempFilePath, READ)) {
-            MappedByteBuffer mappedByteBuffer = tempFileChannel.map(
-                    READ_ONLY, position, count);
-            mappedByteBuffer.rewind();
+            ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 4);
 
-            readBytes = new byte[count];
-            mappedByteBuffer.get(readBytes);
+            while (tempFileChannel.read(buffer, offset) != -1 && count > 0) {
+                if (count < buffer.limit())
+                    buffer.limit(count);
+
+                buffer.flip();
+                buffer.get(readBytes, readBytes.length - count, buffer.limit());
+
+                count -= buffer.limit();
+                offset += buffer.limit();
+
+                buffer.clear();
+            }
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
             return null;
@@ -202,44 +214,30 @@ public class HexEditor {
      * Finds some sequence of bytes specified by the exact value or by
      * some mask.
      *
-     * @param position the file position at which the searching is to
+     * @param offset the file position at which the searching is to
      *                 begin
      * @return match position or -1 if it was not found
      */
-    public long find(long position, byte... mask) {
+    public long find(long offset, byte... mask) {
         byte[] readBytes;
+        int bufferSize = 1024 * 1024;
         int res = -1;
 
-        try (FileChannel tempFileChannel = (FileChannel) Files.newByteChannel(
-                tempFilePath, READ)) {
-
-            long bytesToRead = tempFileChannel.size() - position;
-            int bufferSize = 1024 * 1024;
-
-            while (bytesToRead > 0) {
-                if (bytesToRead < bufferSize)
-                    readBytes = read(position, (int) bytesToRead);
-                else
-                    readBytes = read(position, bufferSize);
-
-                try {
-                    res = ByteSequence.find(mask, readBytes);
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    return -1;
-                }
-
-                if (res != -1) return position + res;
-
-                // The mask length is subtracted to consider the case
-                // when the required sequence is divided between two
-                // buffers
-                position += bufferSize - mask.length;
-                bytesToRead -= bufferSize - mask.length;
+        while ((readBytes = read(offset, bufferSize)) != null) {
+            try {
+                res = ByteSequence.find(mask, readBytes);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+                return -1;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (res != -1)
+                return offset + res;
+            // The mask length is subtracted to consider the case
+            // when the required sequence is divided between two
+            // buffers
+            offset += bufferSize - mask.length;
         }
+
         return res;
     }
 
@@ -259,7 +257,7 @@ public class HexEditor {
         try (RandomAccessFile r = new RandomAccessFile(
                 tempFilePath.toFile(), "rw");
              RandomAccessFile rTemp = new RandomAccessFile(
-                     path.toFile(), "rw");) {
+                     path.toFile(), "rw")) {
 
             try (FileChannel sourceChannel = r.getChannel();
                  FileChannel targetChannel = rTemp.getChannel()) {

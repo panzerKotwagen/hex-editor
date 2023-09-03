@@ -88,7 +88,7 @@ public class HexEditorTest {
     @Test
     void readMoreThenExist() {
         hexEditor.openFile("src/test/resources/test1.txt");
-        assertNull(hexEditor.read(0, 15));
+        assertArrayEquals(hexEditor.read(0, 11), hexEditor.read(0, 15));
         hexEditor.closeFile();
     }
 
