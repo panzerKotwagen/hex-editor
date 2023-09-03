@@ -1,18 +1,19 @@
 package gui;
 
+import editor.HexEditor;
+
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
+import java.util.IllegalFormatConversionException;
 
 /**
  * Describes TableModel with dynamic column count provides displaying
  * contents of a file in binary format.
  */
 public class FileTableModel extends AbstractTableModel {
-
-    /**
-     * Stores the file data.
-     */
-    private final ArrayList<Object> data = new ArrayList<>();
+    private int offset = 0;
+    private HexEditor hexEditor;
+    private byte[] buffer;
+    private int bufferSize = 1024;
 
     /**
      * The column count of the TableModel.
@@ -38,7 +39,9 @@ public class FileTableModel extends AbstractTableModel {
      */
     @Override
     public int getRowCount() {
-        return (int) Math.ceil((double) data.size() / getColumnCount());
+        if (hexEditor == null)
+            return 0;
+        return (int) Math.ceil((double) hexEditor.getFileSize() / (getColumnCount() - 1));
     }
 
     /**
@@ -79,11 +82,16 @@ public class FileTableModel extends AbstractTableModel {
             // Return calculated offset
             return String.format("%08X", rowIndex * (getColumnCount() - 1));
         }
+
+        int index = getIndex(rowIndex, columnIndex);
+        if (index >= bufferSize + offset || index < offset) {
+            offset = index - index % bufferSize;
+            buffer = hexEditor.read(offset, bufferSize);
+        }
+
         try {
-            // -1 is subtracted because offset is not stored in the data
-            return String.format("%02X",
-                    data.get(rowIndex * (getColumnCount() - 1) + columnIndex - 1));
-        } catch (IndexOutOfBoundsException e) {
+            return String.format("%02X", buffer[index - offset]);
+        } catch (ArrayIndexOutOfBoundsException e) {
             // If there is no bytes return empty string.
             // It is necessary to fill with empty strings those cells
             // of the last row for which there are not enough bytes.
@@ -122,17 +130,11 @@ public class FileTableModel extends AbstractTableModel {
     /**
      * Fills the TableModel with the file data deleting previous.
      *
-     * @param fileData read file data
+     * @param
      */
-    public void setDataSource(byte[] fileData) {
-        int bytesToRead = fileData.length;
-        int pos = 0;
-        data.clear();
-
-        while (pos < bytesToRead) {
-            data.add(fileData[pos++]);
-        }
-
+    public void setDataSource(HexEditor hex) {
+        hexEditor = hex;
+        buffer = hexEditor.read(0, bufferSize);
         fireTableStructureChanged();
     }
 
@@ -159,6 +161,10 @@ public class FileTableModel extends AbstractTableModel {
      * @return the byte value at the specified index
      */
     public byte getValueByIndex(int index) {
-        return (Byte) data.get(index);
+        return buffer[index - offset];
+    }
+
+    public int getIndex(int rowIndex, int columnIndex) {
+        return rowIndex * (getColumnCount() - 1) + columnIndex - 1;
     }
 }

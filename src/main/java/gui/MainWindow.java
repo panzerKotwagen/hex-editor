@@ -76,7 +76,6 @@ public class MainWindow {
 
         frame = new JFrame("Hex editor");
         frame.setMinimumSize(new Dimension(600, 600));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         menuBar = new JMenuBar();
 
@@ -112,6 +111,12 @@ public class MainWindow {
                 if (fileIsOpened) {
                     fileTable.updateTableView(frame.getBounds().width);
                 }
+            }
+        });
+
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                exit();
             }
         });
 
@@ -320,14 +325,12 @@ public class MainWindow {
     private void createTable() {
         FileTableModel tableModel = new FileTableModel(16);
 
-        byte[] data = hexEditor.read(0, (int) hexEditor.getFileSize());
-
-        tableModel.setDataSource(data);
+        tableModel.setDataSource(hexEditor);
 
         fileTable = new FileTable(tableModel);
 
         fileTable.updateTableView(frame.getBounds().width);
-
+        
         fileTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -352,9 +355,10 @@ public class MainWindow {
 
         for (int i = 0; i < 8; i++) {
             try {
-                array[i] = model.getValueByIndex(fileTable.selectedRowIndexStart
-                        * (fileTable.getColumnCount() - 1)
-                        + fileTable.selectedColIndexStart - 1 + i);
+
+                array[i] = model.getValueByIndex(model.getIndex(
+                        fileTable.selectedRowIndexStart,
+                        fileTable.selectedColIndexStart));
             }
             // If the number of bytes in the file starting from the
             // selected position is less than 8
