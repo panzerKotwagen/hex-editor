@@ -86,8 +86,6 @@ public class MainWindow {
     private FileAction cutAct;
     private FileAction copyAct;
     private FileAction pasteAct;
-    private FileAction addAct;
-    private FileAction insertZeros;
 
     /**
      * The variable to indicate the position of the file starting
@@ -112,6 +110,7 @@ public class MainWindow {
 
         frame = new JFrame("Hex editor");
         frame.setMinimumSize(new Dimension(600, 600));
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         menuBar = new JMenuBar();
 
@@ -218,11 +217,6 @@ public class MainWindow {
                 KeyEvent.VK_V,
                 KeyEvent.VK_V,
                 "Insert the byte block saved in the clipboard.");
-        addAct = new FileAction(
-                "Paste",
-                KeyEvent.VK_H,
-                KeyEvent.VK_H,
-                "Insert the byte block saved in the clipboard.");
 
         saveAsNewAct.putValue(FileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 InputEvent.SHIFT_MASK));
@@ -267,8 +261,6 @@ public class MainWindow {
         JMenuItem mItemCut = new JMenuItem(cutAct);
         JMenuItem mItemPaste = new JMenuItem(pasteAct);
         JMenuItem mItemFind = new JMenuItem("Find");
-
-        mItemFind.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
 
         menuEdit.add(mItemCopy);
         menuEdit.add(mItemCut);
@@ -342,6 +334,13 @@ public class MainWindow {
      * Launches the file manager window to open an existing file.
      */
     private void openFile() {
+        if (fileIsOpened) {
+            int response = showConfirmSavingDialog();
+
+            if (response == JOptionPane.CANCEL_OPTION)
+                return;
+        }
+
         FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
         fd.setDirectory("C:\\");
         fd.setVisible(true);
@@ -389,7 +388,7 @@ public class MainWindow {
         fileTable = new FileTable(tableModel);
 
         fileTable.updateTableView(frame.getBounds().width);
-        
+
         fileTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -457,6 +456,11 @@ public class MainWindow {
         if (!fileIsOpened)
             return;
 
+        int response = showConfirmSavingDialog();
+
+        if (response == JOptionPane.CANCEL_OPTION)
+            return;
+
         if (!hexEditor.closeFile()) {
             System.err.println("Error: failed to close file");
             return;
@@ -465,6 +469,8 @@ public class MainWindow {
         viewFilePanel.getViewport().remove(0);
 
         unblockFileButtons(false);
+
+        fileIsOpened = false;
 
         updateFrame();
     }
@@ -506,9 +512,33 @@ public class MainWindow {
      * Closes the program.
      */
     private void exit() {
-        if (fileIsOpened)
-            closeFile();
+        if (!fileIsOpened) {
+            System.exit(0);
+        }
+
+        int response = showConfirmSavingDialog();
+
+        if (response == JOptionPane.CANCEL_OPTION)
+            return;
+
+        hexEditor.closeFile();
         System.exit(0);
+    }
+
+    /**
+     * Showes the dialog window in which the user is prompted to save
+     * the file.
+     * @return user response
+     */
+    int showConfirmSavingDialog() {
+        int response = JOptionPane.showConfirmDialog(
+                frame, "Do you want to save changes?");
+
+        if (response == JOptionPane.YES_OPTION) {
+            saveFile();
+        }
+
+        return response;
     }
 
     /**
@@ -562,6 +592,7 @@ public class MainWindow {
      * Cuts the selected byte block into clipboard.
      */
     private void cut() {
+        updateSelectedByteIndex();
         copy();
         hexEditor.delete(offset, count);
         tableModel.updateTable();
@@ -572,10 +603,9 @@ public class MainWindow {
      */
     public void copy() {
         updateSelectedByteIndex();
-
         byteClipboard = new byte[count];
         for (int i = 0; i < count; i++) {
-            byteClipboard[i]= tableModel.getValueByIndex(offset + i);
+            byteClipboard[i] = tableModel.getValueByIndex(offset + i);
         }
     }
 
