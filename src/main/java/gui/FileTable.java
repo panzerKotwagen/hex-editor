@@ -1,5 +1,7 @@
 package gui;
 
+import javafx.scene.control.SelectionModel;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -50,7 +52,7 @@ public class FileTable extends JTable {
         this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         this.setCellSelectionEnabled(true);
         this.getSelectionModel().setSelectionMode(
-                ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+                ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.getColumnModel().setSelectionModel(new ColumnSelectionModel());
 
         setColumnsWidth();
@@ -113,7 +115,6 @@ public class FileTable extends JTable {
                 if (index1 != 0) index0 = 1;
                 else return;
             } else if (index1 == 0) return;
-
             super.setSelectionInterval(index0, index1);
         }
     }

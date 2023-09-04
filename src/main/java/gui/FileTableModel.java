@@ -3,7 +3,6 @@ package gui;
 import editor.HexEditor;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.IllegalFormatConversionException;
 
 /**
  * Describes TableModel with dynamic column count provides displaying
@@ -164,7 +163,22 @@ public class FileTableModel extends AbstractTableModel {
         return buffer[index - offset];
     }
 
+    /**
+     * Returns the byte index as if the whole file content
+     * was stored in an array.
+     * @param rowIndex row index of the cell
+     * @param columnIndex column index of the cell
+     * @return
+     */
     public int getIndex(int rowIndex, int columnIndex) {
         return rowIndex * (getColumnCount() - 1) + columnIndex - 1;
+    }
+
+    /**
+     * Updates current visible table part.
+     */
+    public void updateTable() {
+        buffer = hexEditor.read(offset, bufferSize);
+        fireTableDataChanged();
     }
 }

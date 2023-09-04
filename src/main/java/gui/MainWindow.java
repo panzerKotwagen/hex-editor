@@ -45,6 +45,11 @@ public class MainWindow {
     private FileTable fileTable;
 
     /**
+     * The table model of the FileTable.
+     */
+    private FileTableModel tableModel;
+
+    /**
      * The class for manipulation with a file.
      */
     private final HexEditor hexEditor;
@@ -54,19 +59,50 @@ public class MainWindow {
      */
     private boolean fileIsOpened = false;
 
+    /**
+     * Text fields in which byte block represented as number.
+     */
     private final HashMap<String, JTextField> textFields = new HashMap<>();
 
+    /**
+     * Labels for the bit represent panel.
+     */
     private final String[] labelTexts = {
             "Signed 8 bit", "Signed 32 bit", "Unsigned 8 bit",
             "Unsigned 32 bit", "Signed 16 bit", "Signed 64 bit",
             "Unsigned 16 bit", "Unsigned 64 bit", "Float 32 bit",
             "Double 64 bit"};
 
+    /**
+     * The byte array to store the copy bytes.
+     */
+    private byte[] byteClipboard;
+
     private FileAction openAct;
     private FileAction saveAct;
     private FileAction closeAct;
     private FileAction saveAsNewAct;
     private FileAction exitAct;
+    private FileAction cutAct;
+    private FileAction copyAct;
+    private FileAction pasteAct;
+    private FileAction addAct;
+    private FileAction insertZeros;
+
+    /**
+     * The variable to indicate the position of the file starting
+     * from which an operation will perform.
+     */
+    private int offset;
+
+    /**
+     * Selected cell count.
+     */
+    private int count;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(MainWindow::new);
+    }
 
     /**
      * Initialize the application window.
@@ -138,10 +174,6 @@ public class MainWindow {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainWindow::new);
-    }
-
     /**
      * Creates the FileAction objects.
      */
@@ -171,6 +203,26 @@ public class MainWindow {
                 KeyEvent.VK_W,
                 KeyEvent.VK_W,
                 "Close the current opened file.");
+        cutAct = new FileAction(
+                "Cut",
+                KeyEvent.VK_B,
+                KeyEvent.VK_B,
+                "Cut the selected byte block and save it to clipboard.");
+        copyAct = new FileAction(
+                "Copy",
+                KeyEvent.VK_C,
+                KeyEvent.VK_C,
+                "Copy the selected byte block to clipboard.");
+        pasteAct = new FileAction(
+                "Paste",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "Insert the byte block saved in the clipboard.");
+        addAct = new FileAction(
+                "Paste",
+                KeyEvent.VK_H,
+                KeyEvent.VK_H,
+                "Insert the byte block saved in the clipboard.");
 
         saveAsNewAct.putValue(FileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 InputEvent.SHIFT_MASK));
@@ -209,15 +261,13 @@ public class MainWindow {
      */
     private void makeEditMenu() {
         JMenu menuEdit = new JMenu("Edit");
+        menuEdit.setMnemonic(KeyEvent.VK_E);
 
-        JMenuItem mItemCopy = new JMenuItem("Copy");
-        JMenuItem mItemCut = new JMenuItem("Cut");
-        JMenuItem mItemPaste = new JMenuItem("Paste");
+        JMenuItem mItemCopy = new JMenuItem(copyAct);
+        JMenuItem mItemCut = new JMenuItem(cutAct);
+        JMenuItem mItemPaste = new JMenuItem(pasteAct);
         JMenuItem mItemFind = new JMenuItem("Find");
 
-        mItemCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
-        mItemCut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
-        mItemPaste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
         mItemFind.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
 
         menuEdit.add(mItemCopy);
@@ -252,11 +302,17 @@ public class MainWindow {
         JButton btnClose = new JButton(closeAct);
         JButton btnSave = new JButton(saveAct);
         JButton btnSaveAs = new JButton(saveAsNewAct);
+        JButton btnCut = new JButton(cutAct);
+        JButton btnCopy = new JButton(copyAct);
+        JButton btnPaste = new JButton(pasteAct);
 
         toolBar.add(btnOpen);
         toolBar.add(btnClose);
         toolBar.add(btnSave);
         toolBar.add(btnSaveAs);
+        toolBar.add(btnCut);
+        toolBar.add(btnCopy);
+        toolBar.add(btnPaste);
     }
 
     /**
@@ -317,13 +373,16 @@ public class MainWindow {
         saveAct.setEnabled(newValue);
         saveAsNewAct.setEnabled(newValue);
         closeAct.setEnabled(newValue);
+        copyAct.setEnabled(newValue);
+        cutAct.setEnabled(newValue);
+        pasteAct.setEnabled(newValue);
     }
 
     /**
      * Creates and display the table with the opened file data.
      */
     private void createTable() {
-        FileTableModel tableModel = new FileTableModel(16);
+        tableModel = new FileTableModel(16);
 
         tableModel.setDataSource(hexEditor);
 
@@ -350,15 +409,15 @@ public class MainWindow {
      * selected byte and 7 more to the right of it.
      */
     private void fillBitPanel() {
-        FileTableModel model = (FileTableModel) fileTable.getModel();
         byte[] array = new byte[8];
 
         for (int i = 0; i < 8; i++) {
             try {
 
-                array[i] = model.getValueByIndex(model.getIndex(
+                int index = tableModel.getIndex(
                         fileTable.selectedRowIndexStart,
-                        fileTable.selectedColIndexStart));
+                        fileTable.selectedColIndexStart);
+                array[i] = tableModel.getValueByIndex(index);
             }
             // If the number of bytes in the file starting from the
             // selected position is less than 8
@@ -486,7 +545,66 @@ public class MainWindow {
                 case "Exit":
                     exit();
                     break;
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    insert();
+                    break;
             }
         }
+    }
+
+    /**
+     * Cuts the selected byte block into clipboard.
+     */
+    private void cut() {
+        copy();
+        hexEditor.delete(offset, count);
+        tableModel.updateTable();
+    }
+
+    /**
+     * Copies the selected byte block into clipboard.
+     */
+    public void copy() {
+        updateSelectedByteIndex();
+
+        byteClipboard = new byte[count];
+        for (int i = 0; i < count; i++) {
+            byteClipboard[i]= tableModel.getValueByIndex(offset + i);
+        }
+    }
+
+    /**
+     * Pastes the byte block from the clipboard starting from the
+     * selected cell with replacement.
+     */
+    public void insert() {
+        updateSelectedByteIndex();
+        hexEditor.insert(offset, byteClipboard);
+        tableModel.updateTable();
+    }
+
+    /**
+     * Pastes the byte block from the clipboard into the selected cell
+     * with offset of the next bytes.
+     */
+    public void add() {
+        updateSelectedByteIndex();
+        hexEditor.add(offset, byteClipboard);
+        tableModel.updateTable();
+    }
+
+    /**
+     *
+     */
+    void updateSelectedByteIndex() {
+        offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
+        int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
+        count = end - offset + 1;
     }
 }
