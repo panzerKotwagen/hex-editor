@@ -12,7 +12,7 @@ public class FileTableModel extends AbstractTableModel {
     private int offset = 0;
     private HexEditor hexEditor;
     private byte[] buffer;
-    private int bufferSize = 1024;
+    private final int bufferSize = 1024;
 
     /**
      * The column count of the TableModel.
@@ -129,7 +129,7 @@ public class FileTableModel extends AbstractTableModel {
     /**
      * Fills the TableModel with the file data deleting previous.
      *
-     * @param
+     * @param hex the file which data is read
      */
     public void setDataSource(HexEditor hex) {
         hexEditor = hex;

@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Enumeration;
-import java.util.HashMap;
 
 /**
  * The class that provides GUI.
@@ -20,16 +19,6 @@ public class MainWindow {
     private final JFrame frame;
 
     /**
-     * The menu-bar of the main frame.
-     */
-    private final JMenuBar menuBar;
-
-    /**
-     * The toolbar of the main frame.
-     */
-    private JToolBar toolBar;
-
-    /**
      * The panel for manipulation with file data.
      */
     private final JScrollPane viewFilePanel;
@@ -37,7 +26,7 @@ public class MainWindow {
     /**
      * The panel on which byte decode is placed.
      */
-    private final JPanel decodePanel;
+    private final RepresentBytesPane decodePanel;
 
     /**
      * The table in which file data is displayed.
@@ -60,32 +49,18 @@ public class MainWindow {
     private boolean fileIsOpened = false;
 
     /**
-     * Text fields in which byte block represented as number.
-     */
-    private final HashMap<String, JTextField> textFields = new HashMap<>();
-
-    /**
-     * Labels for the bit represent panel.
-     */
-    private final String[] labelTexts = {
-            "Signed 8 bit", "Signed 32 bit", "Unsigned 8 bit",
-            "Unsigned 32 bit", "Signed 16 bit", "Signed 64 bit",
-            "Unsigned 16 bit", "Unsigned 64 bit", "Float 32 bit",
-            "Double 64 bit"};
-
-    /**
      * The byte array to store the copy bytes.
      */
     private byte[] byteClipboard;
 
-    private FileAction openAct;
-    private FileAction saveAct;
-    private FileAction closeAct;
-    private FileAction saveAsNewAct;
-    private FileAction exitAct;
-    private FileAction cutAct;
-    private FileAction copyAct;
-    private FileAction pasteAct;
+    public static FileAction openAct;
+    public static FileAction saveAct;
+    public static FileAction closeAct;
+    public static FileAction saveAsNewAct;
+    public static FileAction exitAct;
+    public static FileAction cutAct;
+    public static FileAction copyAct;
+    public static FileAction pasteAct;
 
     /**
      * The variable to indicate the position of the file starting
@@ -112,27 +87,21 @@ public class MainWindow {
         frame.setMinimumSize(new Dimension(600, 600));
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        menuBar = new JMenuBar();
-
         makeFileActions();
 
-        makeFileMenu();
-        makeEditMenu();
-        makeHelpMenu();
+         // The menu-bar of the main frame.
+        Menu menuBar = new Menu();
 
-        makeToolBar();
+         // The toolbar of the main frame.
+        Toolbar toolBar = new Toolbar();
 
-        decodePanel = new JPanel(new GridLayout(5, 4, 5, 5));
+        decodePanel = new RepresentBytesPane();
 
         viewFilePanel = new JScrollPane();
-
-        makeBitValuesPanel();
 
         frame.add(toolBar, BorderLayout.NORTH);
 
         frame.setJMenuBar(menuBar);
-
-        decodePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         frame.add(decodePanel, BorderLayout.SOUTH);
 
@@ -174,160 +143,90 @@ public class MainWindow {
     }
 
     /**
-     * Creates the FileAction objects.
-     */
-    private void makeFileActions() {
-        openAct = new FileAction(
-                "Open",
-                KeyEvent.VK_O,
-                KeyEvent.VK_O,
-                "Creates a file dialog window for loading a file.");
-        saveAct = new FileAction(
-                "Save",
-                KeyEvent.VK_S,
-                KeyEvent.VK_S,
-                "Save the current opened file with replacement.");
-        saveAsNewAct = new FileAction(
-                "Save As",
-                KeyEvent.VK_S,
-                KeyEvent.VK_S,
-                "Creates a file dialog window for saving a new file.");
-        exitAct = new FileAction(
-                "Exit",
-                KeyEvent.VK_Q,
-                KeyEvent.VK_Q,
-                "Close the editor.");
-        closeAct = new FileAction(
-                "Close",
-                KeyEvent.VK_W,
-                KeyEvent.VK_W,
-                "Close the current opened file.");
-        cutAct = new FileAction(
-                "Cut",
-                KeyEvent.VK_B,
-                KeyEvent.VK_B,
-                "Cut the selected byte block and save it to clipboard.");
-        copyAct = new FileAction(
-                "Copy",
-                KeyEvent.VK_C,
-                KeyEvent.VK_C,
-                "Copy the selected byte block to clipboard.");
-        pasteAct = new FileAction(
-                "Paste",
-                KeyEvent.VK_V,
-                KeyEvent.VK_V,
-                "Insert the byte block saved in the clipboard.");
-
-        saveAsNewAct.putValue(FileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                InputEvent.SHIFT_MASK));
-
-        // The functions are not available until a file is opened
-        unblockFileButtons(false);
-    }
-
-    /**
-     * Makes submenu File of the menu bar. Each menu item is
-     * associated with appropriate FileAction.
-     */
-    private void makeFileMenu() {
-        JMenu menuFile = new JMenu("File");
-        menuFile.setMnemonic(KeyEvent.VK_F);
-
-        JMenuItem mItemOpen = new JMenuItem(openAct);
-        JMenuItem mItemSave = new JMenuItem(saveAct);
-        JMenuItem mItemSaveAs = new JMenuItem(saveAsNewAct);
-        JMenuItem mItemClose = new JMenuItem(closeAct);
-        JMenuItem mItemExit = new JMenuItem(exitAct);
-
-        menuFile.add(mItemOpen);
-        menuFile.addSeparator();
-        menuFile.add(mItemSave);
-        menuFile.add(mItemSaveAs);
-        menuFile.addSeparator();
-        menuFile.add(mItemClose);
-        menuFile.add(mItemExit);
-
-        menuBar.add(menuFile);
-    }
-
-    /**
-     * Makes submenu Edit of the menu bar.
-     */
-    private void makeEditMenu() {
-        JMenu menuEdit = new JMenu("Edit");
-        menuEdit.setMnemonic(KeyEvent.VK_E);
-
-        JMenuItem mItemCopy = new JMenuItem(copyAct);
-        JMenuItem mItemCut = new JMenuItem(cutAct);
-        JMenuItem mItemPaste = new JMenuItem(pasteAct);
-        JMenuItem mItemFind = new JMenuItem("Find");
-
-        menuEdit.add(mItemCopy);
-        menuEdit.add(mItemCut);
-        menuEdit.add(mItemPaste);
-        menuEdit.addSeparator();
-        menuEdit.add(mItemFind);
-
-        menuBar.add(menuEdit);
-    }
-
-    /**
-     * Makes submenu Help of the menu bar.
-     */
-    private void makeHelpMenu() {
-        JMenu menuHelp = new JMenu("Help");
-        JMenuItem mItemAbout = new JMenuItem("About");
-        menuHelp.add(mItemAbout);
-
-        menuBar.add(menuHelp);
-    }
-
-    /**
-     * Makes the toolbar. Each button is associated with appropriate
-     * Action.
-     */
-    private void makeToolBar() {
-        toolBar = new JToolBar("Tools");
-        toolBar.setFloatable(false);
-
-        JButton btnOpen = new JButton(openAct);
-        JButton btnClose = new JButton(closeAct);
-        JButton btnSave = new JButton(saveAct);
-        JButton btnSaveAs = new JButton(saveAsNewAct);
-        JButton btnCut = new JButton(cutAct);
-        JButton btnCopy = new JButton(copyAct);
-        JButton btnPaste = new JButton(pasteAct);
-
-        toolBar.add(btnOpen);
-        toolBar.add(btnClose);
-        toolBar.add(btnSave);
-        toolBar.add(btnSaveAs);
-        toolBar.add(btnCut);
-        toolBar.add(btnCopy);
-        toolBar.add(btnPaste);
-    }
-
-    /**
-     * Makes the panel on which bit represent values are placed on.
-     */
-    private void makeBitValuesPanel() {
-        for (int i = 0; i < 10; i++) {
-            JLabel label = new JLabel(labelTexts[i]);
-            label.setHorizontalAlignment(JLabel.RIGHT);
-            JTextField textField = new JTextField();
-            textField.setEnabled(false);
-            textField.setDisabledTextColor(Color.BLACK);
-            textFields.put(labelTexts[i], textField);
-            decodePanel.add(label);
-            decodePanel.add(textField);
-        }
-    }
-
-    /**
      * Updates the application window to display the changed elements.
      */
     private void updateFrame() {
         SwingUtilities.updateComponentTreeUI(frame);
+    }
+
+    /**
+     * Shows the dialog window in which the user is prompted to save
+     * the file.
+     * @return user response
+     */
+    int showConfirmSavingDialog() {
+        int response = JOptionPane.showConfirmDialog(
+                frame, "Do you want to save changes?");
+
+        if (response == JOptionPane.YES_OPTION) {
+            saveFile();
+        }
+
+        return response;
+    }
+
+    /**
+     * Sets whether the Save and Close actions are enabled.
+     *
+     * @param newValue true to enable, false to disable
+     */
+    private void unblockFileButtons(boolean newValue) {
+        saveAct.setEnabled(newValue);
+        saveAsNewAct.setEnabled(newValue);
+        closeAct.setEnabled(newValue);
+        copyAct.setEnabled(newValue);
+        cutAct.setEnabled(newValue);
+        pasteAct.setEnabled(newValue);
+    }
+
+    /**
+     * Creates and display the table with the opened file data.
+     */
+    private void createTable() {
+        tableModel = new FileTableModel(16);
+
+        tableModel.setDataSource(hexEditor);
+
+        fileTable = new FileTable(tableModel);
+
+        fileTable.updateTableView(frame.getBounds().width);
+
+        fileTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                fileTable.updateSelectedCellIndex();
+                fillBytePane();
+            }
+        });
+
+        viewFilePanel.setViewportView(fileTable);
+
+        updateFrame();
+    }
+
+    /**
+     * Fills the bit represent panel with the values of byte block.
+     * The byte block is a sequence of bytes starting from the
+     * selected byte and 7 more to the right of it.
+     */
+    private void fillBytePane() {
+        byte[] array = new byte[8];
+
+        for (int i = 0; i < 8; i++) {
+            try {
+                int index = tableModel.getIndex(
+                        fileTable.selectedRowIndexStart,
+                        fileTable.selectedColIndexStart);
+                array[i] = tableModel.getValueByIndex(index);
+            }
+            // If the number of bytes in the file starting from the
+            // selected position is less than 8
+            catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+
+        decodePanel.fillPane(new ByteSequence(array));
     }
 
     /**
@@ -361,92 +260,6 @@ public class MainWindow {
         fileIsOpened = true;
 
         createTable();
-    }
-
-    /**
-     * Sets whether the Save and Close actions are enabled.
-     *
-     * @param newValue true to enable, false to disable
-     */
-    private void unblockFileButtons(boolean newValue) {
-        saveAct.setEnabled(newValue);
-        saveAsNewAct.setEnabled(newValue);
-        closeAct.setEnabled(newValue);
-        copyAct.setEnabled(newValue);
-        cutAct.setEnabled(newValue);
-        pasteAct.setEnabled(newValue);
-    }
-
-    /**
-     * Creates and display the table with the opened file data.
-     */
-    private void createTable() {
-        tableModel = new FileTableModel(16);
-
-        tableModel.setDataSource(hexEditor);
-
-        fileTable = new FileTable(tableModel);
-
-        fileTable.updateTableView(frame.getBounds().width);
-
-        fileTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                fileTable.updateSelectedCellIndex();
-                fillBitPanel();
-            }
-        });
-
-        viewFilePanel.setViewportView(fileTable);
-
-        updateFrame();
-    }
-
-    /**
-     * Fills the bit represent panel with the values of byte block.
-     * The byte block is a sequence of bytes starting from the
-     * selected byte and 7 more to the right of it.
-     */
-    private void fillBitPanel() {
-        byte[] array = new byte[8];
-
-        for (int i = 0; i < 8; i++) {
-            try {
-
-                int index = tableModel.getIndex(
-                        fileTable.selectedRowIndexStart,
-                        fileTable.selectedColIndexStart);
-                array[i] = tableModel.getValueByIndex(index);
-            }
-            // If the number of bytes in the file starting from the
-            // selected position is less than 8
-            catch (IndexOutOfBoundsException e) {
-                break;
-            }
-        }
-
-        ByteSequence byteSequence = new ByteSequence(array);
-
-        textFields.get("Signed 8 bit").setText(String.valueOf(
-                byteSequence.representAsSigned8Bit(0)));
-        textFields.get("Unsigned 8 bit").setText(String.valueOf(
-                byteSequence.representAsUnsigned8Bit(0)));
-        textFields.get("Signed 16 bit").setText(String.valueOf(
-                byteSequence.representAsSigned16Bit(0)));
-        textFields.get("Unsigned 16 bit").setText(String.valueOf(
-                byteSequence.representAsUnsigned16Bit(0)));
-        textFields.get("Signed 32 bit").setText(String.valueOf(
-                byteSequence.representAsSigned32Bit(0)));
-        textFields.get("Unsigned 32 bit").setText(String.valueOf(
-                byteSequence.representAsUnsigned32Bit(0)));
-        textFields.get("Signed 64 bit").setText(String.valueOf(
-                byteSequence.representAsSigned64Bit(0)));
-        textFields.get("Unsigned 64 bit").setText(String.valueOf(
-                byteSequence.representAsUnsigned64Bit(0)));
-        textFields.get("Float 32 bit").setText(String.valueOf(
-                byteSequence.representAsFloat(0)));
-        textFields.get("Double 64 bit").setText(String.valueOf(
-                byteSequence.representAsDouble(0)));
     }
 
     /**
@@ -526,69 +339,6 @@ public class MainWindow {
     }
 
     /**
-     * Showes the dialog window in which the user is prompted to save
-     * the file.
-     * @return user response
-     */
-    int showConfirmSavingDialog() {
-        int response = JOptionPane.showConfirmDialog(
-                frame, "Do you want to save changes?");
-
-        if (response == JOptionPane.YES_OPTION) {
-            saveFile();
-        }
-
-        return response;
-    }
-
-    /**
-     * The Action class for the default file operations: Open,
-     * Close, Save, Exit.
-     */
-    private class FileAction extends AbstractAction {
-        public FileAction(String name, int mnem,
-                          int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_MASK));
-            putValue(MNEMONIC_KEY, mnem);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Open":
-                    openFile();
-                    break;
-                case "Close":
-                    closeFile();
-                    break;
-                case "Save":
-                    saveFile();
-                    break;
-                case "Save As":
-                    saveAsNewFile();
-                    break;
-                case "Exit":
-                    exit();
-                    break;
-                case "Cut":
-                    cut();
-                    break;
-                case "Copy":
-                    copy();
-                    break;
-                case "Paste":
-                    insert();
-                    break;
-            }
-        }
-    }
-
-    /**
      * Cuts the selected byte block into clipboard.
      */
     private void cut() {
@@ -636,5 +386,103 @@ public class MainWindow {
         offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
         int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
         count = end - offset + 1;
+    }
+
+    /**
+     * The Action class for the file operations.
+     */
+    private class FileAction extends AbstractAction {
+        public FileAction(String name, int mnemonicKey,
+                          int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_DOWN_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Open":
+                    openFile();
+                    break;
+                case "Close":
+                    closeFile();
+                    break;
+                case "Save":
+                    saveFile();
+                    break;
+                case "Save As":
+                    saveAsNewFile();
+                    break;
+                case "Exit":
+                    exit();
+                    break;
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    insert();
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Creates the FileAction objects.
+     */
+    private void makeFileActions() {
+        openAct = new FileAction(
+                "Open",
+                KeyEvent.VK_O,
+                KeyEvent.VK_O,
+                "Creates a file dialog window for loading a file.");
+        saveAct = new FileAction(
+                "Save",
+                KeyEvent.VK_S,
+                KeyEvent.VK_S,
+                "Save the current opened file with replacement.");
+        saveAsNewAct = new FileAction(
+                "Save As",
+                KeyEvent.VK_S,
+                KeyEvent.VK_S,
+                "Creates a file dialog window for saving a new file.");
+        exitAct = new FileAction(
+                "Exit",
+                KeyEvent.VK_Q,
+                KeyEvent.VK_Q,
+                "Close the editor.");
+        closeAct = new FileAction(
+                "Close",
+                KeyEvent.VK_W,
+                KeyEvent.VK_W,
+                "Close the current opened file.");
+        cutAct = new FileAction(
+                "Cut",
+                KeyEvent.VK_B,
+                KeyEvent.VK_B,
+                "Cut the selected byte block and save it to clipboard.");
+        copyAct = new FileAction(
+                "Copy",
+                KeyEvent.VK_C,
+                KeyEvent.VK_C,
+                "Copy the selected byte block to clipboard.");
+        pasteAct = new FileAction(
+                "Paste",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "Insert the byte block saved in the clipboard.");
+
+        saveAsNewAct.putValue(FileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                InputEvent.SHIFT_DOWN_MASK));
+
+        // The functions are not available until a file is opened
+        unblockFileButtons(false);
     }
 }
