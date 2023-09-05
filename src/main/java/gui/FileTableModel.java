@@ -177,7 +177,7 @@ public class FileTableModel extends AbstractTableModel {
     /**
      * Updates current visible table part.
      */
-    public void updateTable() {
+    public void updateModel() {
         buffer = hexEditor.read(offset, bufferSize);
         fireTableDataChanged();
     }

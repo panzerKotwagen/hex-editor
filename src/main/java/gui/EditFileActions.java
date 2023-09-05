@@ -5,6 +5,7 @@ import editor.HexEditor;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 //TODO: Class description
@@ -31,12 +32,12 @@ public class EditFileActions {
      * The variable to indicate the position of the file starting
      * from which an operation will perform.
      */
-    private int offset;
+    private static int offset;
 
     /**
      * Selected cell count.
      */
-    private int count;
+    private static int count;
 
     public EditFileActions() {
         makeEditFileActions();
@@ -48,40 +49,10 @@ public class EditFileActions {
         EditFileActions.hexEditor = hex;
     }
 
-    public class EditFileAction extends AbstractAction {
-        public EditFileAction(String name, int mnemonicKey,
-                          int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_DOWN_MASK));
-            putValue(MNEMONIC_KEY, mnemonicKey);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Cut":
-                    cut();
-                    break;
-                case "Copy":
-                    copy();
-                    break;
-                case "Paste":
-                    insert();
-                    break;
-            }
-        }
-    }
-
-    private void updateSelectedByteIndex() {
-        offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
-        int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
-        count = end - offset + 1;
-    }
-
+    /**
+     * Sets whether actions are enabled or not.
+     * @param newValue true - to allow, false - to forbid
+     */
     public static void unblockEditActions(boolean newValue) {
         copyAct.setEnabled(newValue);
         cutAct.setEnabled(newValue);
@@ -89,20 +60,29 @@ public class EditFileActions {
     }
 
     /**
+     * Updates the offset of the selected byte in the table.
+     */
+    private static void updateSelectedByteOffset() {
+        offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
+        int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
+        count = end - offset + 1;
+    }
+
+    /**
      * Cuts the selected byte block into clipboard.
      */
     private void cut() {
-        updateSelectedByteIndex();
+        updateSelectedByteOffset();
         copy();
         hexEditor.delete(offset, count);
-        tableModel.updateTable();
+        tableModel.updateModel();
     }
 
     /**
      * Copies the selected byte block into clipboard.
      */
     private void copy() {
-        updateSelectedByteIndex();
+        updateSelectedByteOffset();
         byteClipboard = new byte[count];
         for (int i = 0; i < count; i++) {
             byteClipboard[i] = tableModel.getValueByIndex(offset + i);
@@ -113,12 +93,25 @@ public class EditFileActions {
      * Pastes the byte block from the clipboard starting from the
      * selected cell with replacement.
      */
-    private void insert() {
-        updateSelectedByteIndex();
-        hexEditor.insert(offset, byteClipboard);
-        tableModel.updateTable();
+    private void insertFromClipboard() {
+        insert(byteClipboard);
     }
 
+    /**
+     * Pastes the given byte block starting from the selected cell
+     * with replacement.
+     *
+     * @param bytes byte block to be inserted
+     */
+    private void insert(byte[] bytes) {
+        updateSelectedByteOffset();
+        hexEditor.insert(offset, bytes);
+        tableModel.updateModel();
+    }
+
+    /**
+     * Creates static action instances for using them by buttons.
+     */
     private void makeEditFileActions() {
         cutAct = new EditFileAction(
                 "Cut",
@@ -138,5 +131,80 @@ public class EditFileActions {
 
         // The functions are not available until a file is opened
         unblockEditActions(false);
+    }
+
+    /**
+     * The class that provides filling in the table cell using a
+     * keyboard.
+     */
+    public static class TableKeyboardInput extends KeyAdapter {
+        /**
+         * The number that is written to cell.
+         */
+        private final StringBuilder num = new StringBuilder();
+        /**
+         * The byte offset in the file.
+         */
+        private int prevOffset = offset;
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int keyCode = e.getKeyCode();
+            if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
+                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
+                updateSelectedByteOffset();
+                hexEditor.insert(offset, getNum(e.getKeyChar()));
+                tableModel.updateModel();
+            }
+        }
+
+        /**
+         * Gets the event char and constructs the number.
+         *
+         * @param c pressed event char
+         * @return byte value
+         */
+        private byte getNum(char c) {
+            // If another cell was selected
+            if (prevOffset != offset) {
+                num.delete(0, num.length());
+                prevOffset = offset;
+            }
+
+            if (num.length() > 2) {
+                num.delete(0, 1);
+            }
+
+            num.append(c);
+            return (byte) Long.parseLong(num.toString(), 16);
+        }
+    }
+
+    public class EditFileAction extends AbstractAction {
+        public EditFileAction(String name, int mnemonicKey,
+                              int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_DOWN_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    insertFromClipboard();
+                    break;
+            }
+        }
     }
 }

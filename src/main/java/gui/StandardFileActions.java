@@ -1,6 +1,7 @@
 package gui;
 
 import editor.HexEditor;
+import gui.EditFileActions.TableKeyboardInput;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,62 +16,33 @@ public class StandardFileActions {
     public static StandardFileAction exitAct;
 
     /**
-     * The var for manipulation with a file.
+     * The variable for manipulation with a file.
      */
     private static HexEditor hexEditor;
 
     /**
-     * A variable indicating whether the file is open or not.
+     * The variable indicating whether the file is open or not.
      */
-    private static boolean fileIsOpened;
+    private static boolean fileIsOpened = false;
 
     /**
      * The main application window.
      */
     private static MainWindow frame;
 
+    /**
+     * Initializes the static variables and constructs the actions.
+     *
+     * @param frame main application window
+     */
     public StandardFileActions(MainWindow frame) {
         StandardFileActions.frame = frame;
         StandardFileActions.hexEditor = new HexEditor();
         makeActions();
     }
 
-    public class StandardFileAction extends AbstractAction {
-        public StandardFileAction(String name, int mnemonicKey,
-                                  int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_DOWN_MASK));
-            putValue(MNEMONIC_KEY, mnemonicKey);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Open":
-                    openFile();
-                    break;
-                case "Close":
-                    closeFile();
-                    break;
-                case "Save":
-                    saveFile();
-                    break;
-                case "Save As":
-                    saveAsNewFile();
-                    break;
-                case "Exit":
-                    exit();
-                    break;
-            }
-        }
-    }
-
     /**
-     * Creates the FileAction objects.
+     * Constructs the StandardFileAction objects.
      */
     private void makeActions() {
         openAct = new StandardFileAction(
@@ -102,21 +74,19 @@ public class StandardFileActions {
         saveAsNewAct.putValue(StandardFileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 InputEvent.SHIFT_DOWN_MASK));
 
-        // The functions are not available until a file is opened
-        unblockFileButtons(false);
+        // The actions are not available until a file is opened
+        unblockFileButtons();
     }
 
-    //TODO: Rewrite
     /**
-     * Sets whether the Save and Close actions are enabled.
-     *
-     * @param newValue true to enable, false to disable
+     * Sets whether actions are enabled depending on whether a file
+     * is open.
      */
-    private void unblockFileButtons(boolean newValue) {
-        saveAct.setEnabled(newValue);
-        saveAsNewAct.setEnabled(newValue);
-        closeAct.setEnabled(newValue);
-        EditFileActions.unblockEditActions(newValue);
+    private void unblockFileButtons() {
+        saveAct.setEnabled(fileIsOpened);
+        saveAsNewAct.setEnabled(fileIsOpened);
+        closeAct.setEnabled(fileIsOpened);
+        EditFileActions.unblockEditActions(fileIsOpened);
     }
 
     /**
@@ -138,13 +108,12 @@ public class StandardFileActions {
 
     /**
      * Launches the file manager window to open an existing file.
+     * If the file has been selected creates the table and displays
+     * it on the screen.
      */
     private void openFile() {
         if (fileIsOpened) {
-            int response = showConfirmSavingDialog();
-
-            if (response == JOptionPane.CANCEL_OPTION)
-                return;
+            closeFile();
         }
 
         FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
@@ -162,9 +131,8 @@ public class StandardFileActions {
             return;
         }
 
-        unblockFileButtons(true);
-
         fileIsOpened = true;
+        unblockFileButtons();
 
         FileTable table = FileTable.createTable(hexEditor);
 
@@ -175,6 +143,8 @@ public class StandardFileActions {
                 frame.decodePanel.fillPane(table.getByteSequence());
             }
         });
+
+        table.addKeyListener(new TableKeyboardInput());
 
         EditFileActions.init(table, (FileTableModel) table.getModel(), hexEditor);
 
@@ -211,9 +181,8 @@ public class StandardFileActions {
 
         frame.viewFilePane.getViewport().remove(0);
 
-        unblockFileButtons(false);
-
         fileIsOpened = false;
+        unblockFileButtons();
 
         frame.updateFrame();
     }
@@ -266,5 +235,40 @@ public class StandardFileActions {
 
         hexEditor.closeFile();
         System.exit(0);
+    }
+
+    //TODO: Class description
+    public class StandardFileAction extends AbstractAction {
+        public StandardFileAction(String name, int mnemonicKey,
+                                  int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_DOWN_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Open":
+                    openFile();
+                    break;
+                case "Close":
+                    closeFile();
+                    break;
+                case "Save":
+                    saveFile();
+                    break;
+                case "Save As":
+                    saveAsNewFile();
+                    break;
+                case "Exit":
+                    exit();
+                    break;
+            }
+        }
     }
 }

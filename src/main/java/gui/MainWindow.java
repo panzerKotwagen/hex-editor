@@ -87,34 +87,4 @@ public class MainWindow extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainWindow::new);
     }
-
-    //TODO: Create the keyboard listener
-//    public class TableKeyboardInput extends KeyAdapter {
-//        int prevOffset = offset;
-//        StringBuilder num = new StringBuilder();
-//
-//        @Override
-//        public void keyPressed(KeyEvent e) {
-//            int keyCode = e.getKeyCode();
-//            if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
-//                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
-//                updateSelectedByteIndex();
-//
-//                // If another cell was selected
-//                if (prevOffset != offset) {
-//                    num = num.delete(0, num.length());
-//                    prevOffset = offset;
-//                }
-//
-//                if (num.length() > 2) {
-//                    num.delete(0, 1);
-//                }
-//
-//                num.append(e.getKeyChar());
-//                byte b = (byte) Long.parseLong(num.toString(), 16);
-//                hexEditor.insert(offset, b);
-//                tableModel.updateTable();
-//            }
-//        }
-//    }
 }
