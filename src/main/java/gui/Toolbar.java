@@ -11,13 +11,14 @@ public class Toolbar extends JToolBar {
         super("Tools");
         this.setFloatable(false);
 
-        JButton btnOpen = new JButton(MainWindow.openAct);
-        JButton btnClose = new JButton(MainWindow.closeAct);
-        JButton btnSave = new JButton(MainWindow.saveAct);
-        JButton btnSaveAs = new JButton(MainWindow.saveAsNewAct);
-        JButton btnCut = new JButton(MainWindow.cutAct);
-        JButton btnCopy = new JButton(MainWindow.copyAct);
-        JButton btnPaste = new JButton(MainWindow.pasteAct);
+        JButton btnOpen = new JButton(StandardFileActions.openAct);
+        JButton btnClose = new JButton(StandardFileActions.closeAct);
+        JButton btnSave = new JButton(StandardFileActions.saveAct);
+        JButton btnSaveAs = new JButton(StandardFileActions.saveAsNewAct);
+
+        JButton btnCut = new JButton(EditFileActions.cutAct);
+        JButton btnCopy = new JButton(EditFileActions.copyAct);
+        JButton btnPaste = new JButton(EditFileActions.pasteAct);
 
         this.add(btnOpen);
         this.add(btnClose);

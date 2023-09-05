@@ -3,6 +3,7 @@ package gui;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 
+//TODO: Class description
 public class Menu extends JMenuBar {
     Menu() {
         makeFileMenu();
@@ -18,11 +19,11 @@ public class Menu extends JMenuBar {
         JMenu menuFile = new JMenu("File");
         menuFile.setMnemonic(KeyEvent.VK_F);
 
-        JMenuItem mItemOpen = new JMenuItem(MainWindow.openAct);
-        JMenuItem mItemSave = new JMenuItem(MainWindow.saveAct);
-        JMenuItem mItemSaveAs = new JMenuItem(MainWindow.saveAsNewAct);
-        JMenuItem mItemClose = new JMenuItem(MainWindow.closeAct);
-        JMenuItem mItemExit = new JMenuItem(MainWindow.exitAct);
+        JMenuItem mItemOpen = new JMenuItem(StandardFileActions.openAct);
+        JMenuItem mItemSave = new JMenuItem(StandardFileActions.saveAct);
+        JMenuItem mItemSaveAs = new JMenuItem(StandardFileActions.saveAsNewAct);
+        JMenuItem mItemClose = new JMenuItem(StandardFileActions.closeAct);
+        JMenuItem mItemExit = new JMenuItem(StandardFileActions.exitAct);
 
         menuFile.add(mItemOpen);
         menuFile.addSeparator();
@@ -42,9 +43,9 @@ public class Menu extends JMenuBar {
         JMenu menuEdit = new JMenu("Edit");
         menuEdit.setMnemonic(KeyEvent.VK_E);
 
-        JMenuItem mItemCopy = new JMenuItem(MainWindow.copyAct);
-        JMenuItem mItemCut = new JMenuItem(MainWindow.cutAct);
-        JMenuItem mItemPaste = new JMenuItem(MainWindow.pasteAct);
+        JMenuItem mItemCopy = new JMenuItem(EditFileActions.copyAct);
+        JMenuItem mItemCut = new JMenuItem(EditFileActions.cutAct);
+        JMenuItem mItemPaste = new JMenuItem(EditFileActions.pasteAct);
 
         menuEdit.add(mItemCopy);
         menuEdit.add(mItemCut);

@@ -1,5 +1,8 @@
 package gui;
 
+import editor.ByteSequence;
+import editor.HexEditor;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -101,6 +104,22 @@ public class FileTable extends JTable {
                 .getMaxSelectionIndex();
     }
 
+    //TODO: Rewrite javadoc
+    /**
+     * Creates the table with the opened file data.
+     */
+    public static FileTable createTable(HexEditor dataSource) {
+        FileTableModel model = new FileTableModel(16);
+
+        model.setDataSource(dataSource);
+
+        FileTable table = new FileTable(model);
+
+        table.updateTableView(800);
+
+        return table;
+    }
+
     /**
      * The ListSelectionModel in which it is forbidden to select the
      * first column.
@@ -115,6 +134,34 @@ public class FileTable extends JTable {
             } else if (index1 == 0) return;
             super.setSelectionInterval(index0, index1);
         }
+    }
+
+    /**
+     * Return the byte block starting from the
+     * selected byte and 7 more to the right of it.
+     *
+     * @return the byte block of length 8 starting from the selected byte
+     */
+    public ByteSequence getByteSequence() {
+        byte[] array = new byte[8];
+        FileTableModel tableModel = (FileTableModel) this.getModel();
+
+        for (int i = 0; i < 8; i++) {
+            try {
+                //TODO: Rewrite
+                int index = tableModel.getIndex(
+                        this.selectedRowIndexStart,
+                        this.selectedColIndexStart);
+                array[i] = tableModel.getValueByIndex(index);
+            }
+            // If the number of bytes in the file starting from the
+            // selected position is less than 8
+            catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+
+        return new ByteSequence(array);
     }
 }
 

@@ -47,6 +47,9 @@ public class RepresentBytesPane extends JPanel {
         }
     }
 
+    /**
+     * Fills the bit represent panel with the values of byte block.
+     */
     public void fillPane(ByteSequence byteSequence) {
         textFields.get("Signed 8 bit").setText(String.valueOf(
                 byteSequence.representAsSigned8Bit(0)));
