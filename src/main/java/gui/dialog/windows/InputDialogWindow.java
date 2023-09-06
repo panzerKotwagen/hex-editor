@@ -10,7 +10,7 @@ import java.awt.*;
  * The class describes dialog window in which a user can enter a
  * block of bytes.
  */
-public class InputDialogWindow extends JFrame {
+public class InputDialogWindow extends JDialog {
     private byte[] data;
     private JLabel label;
     private JButton btnDo;
@@ -21,10 +21,9 @@ public class InputDialogWindow extends JFrame {
 
     /**
      * Constructs the dialog window.
-     * @param name window name
      */
-    public InputDialogWindow(String name) {
-        super(name);
+    public InputDialogWindow(JFrame owner, String name) {
+        super(owner, name, true);
 
         MainWindow.setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 18));
 
@@ -34,7 +33,7 @@ public class InputDialogWindow extends JFrame {
 
         this.setResizable(false);
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         InputTable table = new InputTable();
 
@@ -48,13 +47,21 @@ public class InputDialogWindow extends JFrame {
 
         panelButtons = new JPanel(new FlowLayout());
 
-        panelButtons.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-        panelTable.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        panelButtons.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelTable.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        btnDo = new JButton("Go");
+        btnDo = new JButton("Do");
         btnCancel = new JButton("Cancel");
 
-        btnDo.addActionListener(e -> data = table.getData());
+        btnDo.addActionListener(e -> {
+            data = table.getData();
+            this.setVisible(false);
+        });
+
+        btnCancel.addActionListener(e -> {
+            data = table.getData();
+            this.setVisible(false);
+        });
 
         panelButtons.add(btnDo);
         panelButtons.add(btnCancel);
@@ -63,6 +70,15 @@ public class InputDialogWindow extends JFrame {
         this.add(panelTable, BorderLayout.CENTER);
         this.add(panelButtons, BorderLayout.SOUTH);
 
-        this.setVisible(true);
+        this.show();
+        this.dispose();
+    }
+
+    /**
+     * Returns the block of bytes entered by the user.
+     * @return byte array
+     */
+    public byte[] getData() {
+        return data;
     }
 }
