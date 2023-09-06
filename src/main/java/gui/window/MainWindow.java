@@ -34,6 +34,8 @@ public class MainWindow extends JFrame {
         this.setMinimumSize(new Dimension(600, 600));
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
+        setLocationRelativeTo(null);
+
         new EditFileActions();
         new StandardFileActions(this);
 

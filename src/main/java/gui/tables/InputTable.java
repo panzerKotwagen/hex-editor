@@ -23,6 +23,7 @@ public class InputTable extends JTable {
         this.setIntercellSpacing(new Dimension(10, 10));
         this.setShowGrid(true);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        this.setCellSelectionEnabled(false);
         FileTable.setColumnsWidth(this);
         this.getColumnModel().getColumn(0).setPreferredWidth(50);
         this.addKeyListener(new TableKeyboardInput(this));
