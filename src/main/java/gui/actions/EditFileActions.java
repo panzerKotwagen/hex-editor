@@ -1,8 +1,10 @@
 package gui.actions;
 
 import editor.HexEditor;
+import gui.dialog.windows.InputDialogWindow;
 import gui.tables.FileTable;
 import gui.tables.FileTableModel;
+import gui.window.MainWindow;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -19,6 +21,10 @@ public class EditFileActions {
     public static EditFileAction cutAct;
     public static EditFileAction copyAct;
     public static EditFileAction pasteAct;
+    public static EditFileAction addAct;
+    public static EditFileAction insertAct;
+
+    private static MainWindow frame;
 
     /**
      * The table in which file data is displayed.
@@ -49,10 +55,83 @@ public class EditFileActions {
         makeEditFileActions();
     }
 
-    public static void init(FileTable fileTable, FileTableModel tableModel, HexEditor hex) {
+    public static void init(FileTable fileTable, FileTableModel tableModel, HexEditor hex, MainWindow win) {
         EditFileActions.fileTable = fileTable;
         EditFileActions.tableModel = tableModel;
         EditFileActions.hexEditor = hex;
+        EditFileActions.frame = win;
+    }
+
+    /**
+     * The class describes Action performing file edit operations.
+     */
+    public class EditFileAction extends AbstractAction {
+        public EditFileAction(String name, int mnemonicKey,
+                              int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_DOWN_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    paste();
+                    break;
+                case "Insert":
+                    insert();
+                    break;
+                case "Add":
+                    add();
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Creates static action instances for using them by buttons.
+     */
+    private void makeEditFileActions() {
+        //TODO: Fix hotkeys
+        cutAct = new EditFileAction(
+                "Cut",
+                KeyEvent.VK_B,
+                KeyEvent.VK_B,
+                "Cut the selected byte block and save it to clipboard.");
+        copyAct = new EditFileAction(
+                "Copy",
+                KeyEvent.VK_C,
+                KeyEvent.VK_C,
+                "Copy the selected byte block to clipboard.");
+        pasteAct = new EditFileAction(
+                "Paste",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "Pastes the byte block saved in the clipboard.");
+        insertAct = new EditFileAction(
+                "Insert",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "");
+        addAct = new EditFileAction(
+                "Add",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "");
+
+        // The functions are not available until a file is opened
+        unblockEditActions(false);
     }
 
     /**
@@ -63,6 +142,8 @@ public class EditFileActions {
         copyAct.setEnabled(newValue);
         cutAct.setEnabled(newValue);
         pasteAct.setEnabled(newValue);
+        insertAct.setEnabled(newValue);
+        addAct.setEnabled(newValue);
     }
 
     /**
@@ -99,18 +180,24 @@ public class EditFileActions {
      * Pastes the byte block from the clipboard starting from the
      * selected cell with replacement.
      */
-    private void insertFromClipboard() {
-        insert(byteClipboard);
+    private void paste() {
+        updateSelectedByteOffset();
+        hexEditor.insert(offset, byteClipboard);
+        tableModel.updateModel();
     }
 
     /**
      * Pastes the given byte block starting from the selected cell
      * with replacement.
-     *
-     * @param bytes byte block to be inserted
      */
-    private void insert(byte[] bytes) {
+    private void insert() {
         updateSelectedByteOffset();
+        InputDialogWindow win = new InputDialogWindow(frame, "Insert");
+        byte[] bytes = win.getData();
+
+        if (bytes == null || bytes.length == 0)
+            return;
+
         hexEditor.insert(offset, bytes);
         tableModel.updateModel();
     }
@@ -118,36 +205,17 @@ public class EditFileActions {
     /**
      * Inserts the byte block to the selected position with the rest
      * offset to the right.
-     * @param bytes byte array to be added
      */
-    private void add(byte[] bytes) {
+    private void add() {
         updateSelectedByteOffset();
+        InputDialogWindow win = new InputDialogWindow(frame, "Add");
+        byte[] bytes = win.getData();
+
+        if (bytes == null || bytes.length == 0)
+            return;
+
         hexEditor.add(offset, bytes);
         tableModel.updateModel();
-    }
-
-    /**
-     * Creates static action instances for using them by buttons.
-     */
-    private void makeEditFileActions() {
-        cutAct = new EditFileAction(
-                "Cut",
-                KeyEvent.VK_B,
-                KeyEvent.VK_B,
-                "Cut the selected byte block and save it to clipboard.");
-        copyAct = new EditFileAction(
-                "Copy",
-                KeyEvent.VK_C,
-                KeyEvent.VK_C,
-                "Copy the selected byte block to clipboard.");
-        pasteAct = new EditFileAction(
-                "Paste",
-                KeyEvent.VK_V,
-                KeyEvent.VK_V,
-                "Insert the byte block saved in the clipboard.");
-
-        // The functions are not available until a file is opened
-        unblockEditActions(false);
     }
 
     /**
@@ -194,37 +262,6 @@ public class EditFileActions {
 
             num.append(c);
             return (byte) Long.parseLong(num.toString(), 16);
-        }
-    }
-
-    /**
-     * The class describes Action performing file edit operations.
-     */
-    public class EditFileAction extends AbstractAction {
-        public EditFileAction(String name, int mnemonicKey,
-                              int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_DOWN_MASK));
-            putValue(MNEMONIC_KEY, mnemonicKey);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Cut":
-                    cut();
-                    break;
-                case "Copy":
-                    copy();
-                    break;
-                case "Paste":
-                    insertFromClipboard();
-                    break;
-            }
         }
     }
 }

@@ -151,7 +151,7 @@ public class StandardFileActions {
 
         table.addKeyListener(new TableKeyboardInput());
 
-        EditFileActions.init(table, (FileTableModel) table.getModel(), hexEditor);
+        EditFileActions.init(table, (FileTableModel) table.getModel(), hexEditor, frame);
 
         // Monitors the window resizing events for the table redrawing
         frame.addComponentListener(new ComponentAdapter() {
