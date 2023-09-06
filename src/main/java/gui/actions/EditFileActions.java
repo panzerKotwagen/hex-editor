@@ -1,6 +1,8 @@
-package gui;
+package gui.actions;
 
 import editor.HexEditor;
+import gui.tables.FileTable;
+import gui.tables.FileTableModel;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -8,7 +10,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-//TODO: Class description
+/**
+ * The class that provides file editing operations (cut, copy, paste, etc.)
+ * and static variables of the FileEditAction objects
+ * for use them by menu and toolbar buttons.
+ */
 public class EditFileActions {
     public static EditFileAction cutAct;
     public static EditFileAction copyAct;
@@ -110,6 +116,17 @@ public class EditFileActions {
     }
 
     /**
+     * Inserts the byte block to the selected position with the rest
+     * offset to the right.
+     * @param bytes byte array to be added
+     */
+    private void add(byte[] bytes) {
+        updateSelectedByteOffset();
+        hexEditor.add(offset, bytes);
+        tableModel.updateModel();
+    }
+
+    /**
      * Creates static action instances for using them by buttons.
      */
     private void makeEditFileActions() {
@@ -180,6 +197,9 @@ public class EditFileActions {
         }
     }
 
+    /**
+     * The class describes Action performing file edit operations.
+     */
     public class EditFileAction extends AbstractAction {
         public EditFileAction(String name, int mnemonicKey,
                               int accel, String tTip) {

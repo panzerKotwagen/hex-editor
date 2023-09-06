@@ -1,4 +1,7 @@
-package gui;
+package gui.window;
+
+import gui.actions.EditFileActions;
+import gui.actions.StandardFileActions;
 
 import javax.swing.*;
 

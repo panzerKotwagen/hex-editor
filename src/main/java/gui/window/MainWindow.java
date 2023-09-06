@@ -1,4 +1,7 @@
-package gui;
+package gui.window;
+
+import gui.actions.EditFileActions;
+import gui.actions.StandardFileActions;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +29,7 @@ public class MainWindow extends JFrame {
      */
     MainWindow() {
         super("Hex editor");
-        setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 20));
+        setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 18));
 
         this.setMinimumSize(new Dimension(600, 600));
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

@@ -1,7 +1,10 @@
-package gui;
+package gui.actions;
 
 import editor.HexEditor;
-import gui.EditFileActions.TableKeyboardInput;
+import gui.actions.EditFileActions.TableKeyboardInput;
+import gui.tables.FileTable;
+import gui.tables.FileTableModel;
+import gui.window.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -135,6 +138,8 @@ public class StandardFileActions {
         unblockFileButtons();
 
         FileTable table = FileTable.createTable(hexEditor);
+
+        table.updateTableView(frame.getBounds().width);
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

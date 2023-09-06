@@ -1,9 +1,14 @@
-package gui;
+package gui.window;
+
+import gui.actions.EditFileActions;
+import gui.actions.StandardFileActions;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 
-//TODO: Class description
+/**
+ * The application menu.
+ */
 public class Menu extends JMenuBar {
     Menu() {
         makeFileMenu();

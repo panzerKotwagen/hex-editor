@@ -1,4 +1,4 @@
-package gui;
+package gui.tables;
 
 import editor.ByteSequence;
 import editor.HexEditor;
@@ -56,7 +56,7 @@ public class FileTable extends JTable {
                 ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.getColumnModel().setSelectionModel(new ColumnSelectionModel());
 
-        setColumnsWidth();
+        setColumnsWidth(this);
     }
 
     /**
@@ -78,17 +78,17 @@ public class FileTable extends JTable {
 
         FileTableModel tableModel = (FileTableModel) this.getModel();
         tableModel.setColumnCount(columnCount);
-        setColumnsWidth();
+        setColumnsWidth(this);
     }
 
     /**
      * Sets preferred width for every column.
      */
-    public void setColumnsWidth() {
-        this.getColumnModel().getColumn(0).setPreferredWidth(
+    public static void setColumnsWidth(JTable table) {
+        table.getColumnModel().getColumn(0).setPreferredWidth(
                 OFFSET_COLUMN_WIDTH);
-        for (int i = 1; i < this.getColumnCount(); i++) {
-            this.getColumnModel().getColumn(i).setPreferredWidth(
+        for (int i = 1; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(
                     BYTE_COLUMN_WIDTH);
         }
     }
@@ -104,20 +104,15 @@ public class FileTable extends JTable {
                 .getMaxSelectionIndex();
     }
 
-    //TODO: Rewrite javadoc
     /**
-     * Creates the table with the opened file data.
+     * Creates a table containing the data of the given file.
      */
     public static FileTable createTable(HexEditor dataSource) {
         FileTableModel model = new FileTableModel(16);
 
         model.setDataSource(dataSource);
 
-        FileTable table = new FileTable(model);
-
-        table.updateTableView(800);
-
-        return table;
+        return new FileTable(model);
     }
 
     /**
@@ -148,7 +143,6 @@ public class FileTable extends JTable {
 
         for (int i = 0; i < 8; i++) {
             try {
-                //TODO: Rewrite
                 int index = tableModel.getIndex(
                         this.selectedRowIndexStart,
                         this.selectedColIndexStart);

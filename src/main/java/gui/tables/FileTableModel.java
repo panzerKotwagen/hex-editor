@@ -1,4 +1,4 @@
-package gui;
+package gui.tables;
 
 import editor.HexEditor;
 
@@ -9,6 +9,7 @@ import javax.swing.table.AbstractTableModel;
  * contents of a file in binary format.
  */
 public class FileTableModel extends AbstractTableModel {
+    //TODO: Vars description
     private int offset = 0;
     private HexEditor hexEditor;
     private byte[] buffer;
@@ -154,7 +155,8 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the byte value from model data at the specified index.
+     * Returns the byte value from model data at the specified index
+     * as if the whole file content was stored in one array.
      *
      * @param index byte index
      * @return the byte value at the specified index
@@ -165,10 +167,10 @@ public class FileTableModel extends AbstractTableModel {
 
     /**
      * Returns the byte index as if the whole file content
-     * was stored in an array.
+     * was stored in one array.
      * @param rowIndex row index of the cell
      * @param columnIndex column index of the cell
-     * @return
+     * @return the fake byte index
      */
     public int getIndex(int rowIndex, int columnIndex) {
         return rowIndex * (getColumnCount() - 1) + columnIndex - 1;
