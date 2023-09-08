@@ -53,6 +53,7 @@ public class Menu extends JMenuBar {
         JMenuItem mItemPaste = new JMenuItem(EditFileActions.pasteAct);
         JMenuItem mItemInsert = new JMenuItem(EditFileActions.insertAct);
         JMenuItem mItemAdd = new JMenuItem(EditFileActions.addAct);
+        JMenuItem mItemFind = new JMenuItem(EditFileActions.findAct);
 
         menuEdit.add(mItemCopy);
         menuEdit.add(mItemCut);
@@ -60,6 +61,8 @@ public class Menu extends JMenuBar {
         menuEdit.addSeparator();
         menuEdit.add(mItemInsert);
         menuEdit.add(mItemAdd);
+        menuEdit.addSeparator();
+        menuEdit.add(mItemFind);
 
         this.add(menuEdit);
     }

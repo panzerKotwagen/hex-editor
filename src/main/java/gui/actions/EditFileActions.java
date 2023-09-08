@@ -7,6 +7,7 @@ import gui.tables.FileTableModel;
 import gui.window.MainWindow;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
@@ -23,6 +24,7 @@ public class EditFileActions {
     public static EditFileAction pasteAct;
     public static EditFileAction addAct;
     public static EditFileAction insertAct;
+    public static EditFileAction findAct;
 
     private static MainWindow frame;
 
@@ -70,7 +72,7 @@ public class EditFileActions {
                               int accel, String tTip) {
             super(name);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_DOWN_MASK));
+                    ActionEvent.CTRL_MASK));
             putValue(MNEMONIC_KEY, mnemonicKey);
             putValue(SHORT_DESCRIPTION, tTip);
         }
@@ -95,6 +97,9 @@ public class EditFileActions {
                 case "Add":
                     add();
                     break;
+                case "Find":
+                    find();
+                    break;
             }
         }
     }
@@ -118,16 +123,21 @@ public class EditFileActions {
                 "Paste",
                 KeyEvent.VK_V,
                 KeyEvent.VK_V,
-                "Pastes the byte block saved in the clipboard.");
+                "Paste the byte block saved in the clipboard.");
         insertAct = new EditFileAction(
                 "Insert",
-                KeyEvent.VK_V,
-                KeyEvent.VK_V,
+                KeyEvent.VK_I,
+                KeyEvent.VK_I,
                 "");
         addAct = new EditFileAction(
                 "Add",
-                KeyEvent.VK_V,
-                KeyEvent.VK_V,
+                KeyEvent.VK_A,
+                KeyEvent.VK_A,
+                "");
+        findAct = new EditFileAction(
+                "Find",
+                KeyEvent.VK_F,
+                KeyEvent.VK_F,
                 "");
 
         // The functions are not available until a file is opened
@@ -144,6 +154,7 @@ public class EditFileActions {
         pasteAct.setEnabled(newValue);
         insertAct.setEnabled(newValue);
         addAct.setEnabled(newValue);
+        findAct.setEnabled(newValue);
     }
 
     /**
@@ -218,6 +229,31 @@ public class EditFileActions {
         tableModel.updateModel();
     }
 
+    private void find() {
+        InputDialogWindow win = new InputDialogWindow(frame, "Find");
+        byte[] bytes = win.getData();
+
+        if (bytes == null || bytes.length == 0)
+            return;
+
+        long res = hexEditor.find(0, bytes);
+
+        if (res == -1)
+        {
+            JOptionPane.showMessageDialog(
+                    frame, "The specified byte mask has not been found.");
+            return;
+        }
+
+        res = res / (tableModel.getColumnCount() - 1);
+
+        Adjustable e = frame.viewFilePane.getVerticalScrollBar();
+
+        e.setValue((int)res * 40);
+
+        frame.updateFrame();
+    }
+
     /**
      * The class that provides filling in the table cell using a
      * keyboard.
@@ -235,6 +271,11 @@ public class EditFileActions {
         @Override
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
+
+            //
+            if (e.isControlDown())
+                return;
+
             if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
                     || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
                 updateSelectedByteOffset();

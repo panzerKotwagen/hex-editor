@@ -24,6 +24,7 @@ public class Toolbar extends JToolBar {
         JButton btnPaste = new JButton(EditFileActions.pasteAct);
         JButton btnInsert = new JButton(EditFileActions.insertAct);
         JButton btnAdd = new JButton(EditFileActions.addAct);
+        JButton btnFind = new JButton(EditFileActions.findAct);
 
         this.add(btnOpen);
         this.add(btnClose);
@@ -34,5 +35,6 @@ public class Toolbar extends JToolBar {
         this.add(btnPaste);
         this.add(btnInsert);
         this.add(btnAdd);
+        this.add(btnFind);
     }
 }

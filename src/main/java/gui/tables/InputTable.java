@@ -68,7 +68,7 @@ public class InputTable extends JTable {
             try {
                 return String.format("%02X", data.get(getIndex(rowIndex, columnIndex)));
             } catch (IndexOutOfBoundsException e) {
-                return "";
+                return "...";
             }
         }
 

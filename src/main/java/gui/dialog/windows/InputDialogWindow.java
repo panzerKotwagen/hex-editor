@@ -33,8 +33,6 @@ public class InputDialogWindow extends JDialog {
 
         this.setResizable(false);
 
-//        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         InputTable table = new InputTable();
 
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -59,7 +57,6 @@ public class InputDialogWindow extends JDialog {
         });
 
         btnCancel.addActionListener(e -> {
-            data = table.getData();
             this.setVisible(false);
         });
 

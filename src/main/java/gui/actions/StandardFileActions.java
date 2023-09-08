@@ -75,7 +75,7 @@ public class StandardFileActions {
                 "Close the current opened file.");
 
         saveAsNewAct.putValue(StandardFileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                InputEvent.SHIFT_DOWN_MASK));
+                InputEvent.SHIFT_DOWN_MASK + InputEvent.CTRL_DOWN_MASK));
 
         // The actions are not available until a file is opened
         unblockFileButtons();
@@ -116,6 +116,7 @@ public class StandardFileActions {
      */
     private void openFile() {
         if (fileIsOpened) {
+            //TODO: Function doesnt end if user clicked cancel
             closeFile();
         }
 
@@ -248,7 +249,7 @@ public class StandardFileActions {
                                   int accel, String tTip) {
             super(name);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_DOWN_MASK));
+                    ActionEvent.CTRL_MASK));
             putValue(MNEMONIC_KEY, mnemonicKey);
             putValue(SHORT_DESCRIPTION, tTip);
         }
