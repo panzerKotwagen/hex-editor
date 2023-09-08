@@ -10,7 +10,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-//TODO: Class description
+/**
+ * The class that provides file operations: open, close, save, exit
+ * and static variables of the StandardFileAction objects
+ * for using them by menu and toolbar buttons.
+ */
 public class StandardFileActions {
     public static StandardFileAction openAct;
     public static StandardFileAction saveAct;
@@ -52,29 +56,31 @@ public class StandardFileActions {
                 "Open",
                 KeyEvent.VK_O,
                 KeyEvent.VK_O,
-                "Creates a file dialog window for loading a file.");
+                "Open (Ctrl+O)");
         saveAct = new StandardFileAction(
                 "Save",
                 KeyEvent.VK_S,
                 KeyEvent.VK_S,
-                "Save the current opened file with replacement.");
+                "Save (Ctrl+S)");
         saveAsNewAct = new StandardFileAction(
                 "Save As",
                 KeyEvent.VK_S,
                 KeyEvent.VK_S,
-                "Creates a file dialog window for saving a new file.");
+                "Save As (Ctrl+Shift+S)");
         exitAct = new StandardFileAction(
                 "Exit",
                 KeyEvent.VK_Q,
                 KeyEvent.VK_Q,
-                "Close the editor.");
+                "Exit (Ctrl+Q)");
         closeAct = new StandardFileAction(
                 "Close",
                 KeyEvent.VK_W,
                 KeyEvent.VK_W,
-                "Close the current opened file.");
+                "Close (Ctrl+W)");
 
-        saveAsNewAct.putValue(StandardFileAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S,
+        saveAsNewAct.putValue(
+                StandardFileAction.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 InputEvent.SHIFT_DOWN_MASK + InputEvent.CTRL_DOWN_MASK));
 
         // The actions are not available until a file is opened
@@ -98,15 +104,16 @@ public class StandardFileActions {
      *
      * @return user response
      */
-    private int showConfirmSavingDialog() {
+    private boolean maybeSave() {
+        if (!fileIsOpened)
+            return true;
+
         int response = JOptionPane.showConfirmDialog(
                 frame, "Do you want to save changes?");
 
         if (response == JOptionPane.YES_OPTION) {
-            saveFile();
-        }
-
-        return response;
+            return saveFile();
+        } else return response != JOptionPane.CANCEL_OPTION;
     }
 
     /**
@@ -114,10 +121,9 @@ public class StandardFileActions {
      * If the file has been selected creates the table and displays
      * it on the screen.
      */
-    private void openFile() {
-        if (fileIsOpened) {
-            //TODO: Function doesnt end if user clicked cancel
-            closeFile();
+    private void open() {
+        if (!maybeSave()) {
+            return;
         }
 
         FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
@@ -130,10 +136,10 @@ public class StandardFileActions {
         if (filename == null)
             return;
 
-        if (!hexEditor.openFile(dir + filename)) {
-            System.err.println("Error: failed to open file");
-            return;
-        }
+        if (fileIsOpened)
+            hexEditor.closeFile();
+
+        hexEditor.openFile(dir + filename);
 
         fileIsOpened = true;
         unblockFileButtons();
@@ -152,7 +158,11 @@ public class StandardFileActions {
 
         table.addKeyListener(new TableKeyboardInput());
 
-        EditFileActions.init(table, (FileTableModel) table.getModel(), hexEditor, frame);
+        EditFileActions.init(
+                table,
+                (FileTableModel) table.getModel(),
+                hexEditor,
+                frame);
 
         // Monitors the window resizing events for the table redrawing
         frame.addComponentListener(new ComponentAdapter() {
@@ -171,46 +181,33 @@ public class StandardFileActions {
     /**
      * Closes the current opened file.
      */
-    private void closeFile() {
-        if (!fileIsOpened)
-            return;
-
-        int response = showConfirmSavingDialog();
-
-        if (response == JOptionPane.CANCEL_OPTION)
-            return;
-
-        if (!hexEditor.closeFile()) {
-            System.err.println("Error: failed to close file");
-            return;
+    private void close() {
+        if (maybeSave()) {
+            hexEditor.closeFile();
+            frame.viewFilePane.getViewport().remove(0);
+            fileIsOpened = false;
+            unblockFileButtons();
+            frame.updateFrame();
         }
-
-        frame.viewFilePane.getViewport().remove(0);
-
-        fileIsOpened = false;
-        unblockFileButtons();
-
-        frame.updateFrame();
     }
 
     /**
      * Saves the current opened file.
      */
-    private void saveFile() {
-        if (!fileIsOpened)
-            return;
-
-        if (!hexEditor.saveFile()) {
-            System.err.println("Error: failed to save file");
+    private boolean saveFile() {
+        if (!fileIsOpened) {
+            return false;
+        } else {
+            return hexEditor.saveFile();
         }
     }
 
     /**
      * Opens the file manager window to save the file as new one.
      */
-    private void saveAsNewFile() {
+    private boolean saveAsNewFile() {
         if (!fileIsOpened)
-            return;
+            return false;
 
         FileDialog fd = new FileDialog(frame, "Save the file", FileDialog.SAVE);
         fd.setVisible(true);
@@ -219,37 +216,33 @@ public class StandardFileActions {
         String filename = fd.getFile();
 
         if (filename == null)
-            return;
+            return false;
 
-        if (!hexEditor.saveAsNewFile(dir + filename)) {
-            System.err.println("Error: failed to save file");
-        }
+        return hexEditor.saveAsNewFile(dir + filename);
     }
 
     /**
      * Closes the program.
      */
     private void exit() {
-        if (!fileIsOpened) {
-            System.exit(0);
-        }
-
-        int response = showConfirmSavingDialog();
-
-        if (response == JOptionPane.CANCEL_OPTION)
+        if (!maybeSave()) {
             return;
+        }
 
         hexEditor.closeFile();
         System.exit(0);
     }
 
-    //TODO: Class description
+    /**
+     * The class describes Action performing the following file
+     * operations: open, close, save, save as, exit.
+     */
     public class StandardFileAction extends AbstractAction {
         public StandardFileAction(String name, int mnemonicKey,
                                   int accel, String tTip) {
             super(name);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    ActionEvent.CTRL_MASK));
+                    InputEvent.CTRL_MASK));
             putValue(MNEMONIC_KEY, mnemonicKey);
             putValue(SHORT_DESCRIPTION, tTip);
         }
@@ -260,10 +253,10 @@ public class StandardFileActions {
 
             switch (comStr) {
                 case "Open":
-                    openFile();
+                    open();
                     break;
                 case "Close":
-                    closeFile();
+                    close();
                     break;
                 case "Save":
                     saveFile();

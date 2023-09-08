@@ -39,10 +39,8 @@ public class MainWindow extends JFrame {
         new EditFileActions();
         new StandardFileActions(this);
 
-        // The menu-bar of the main frame.
         Menu menuBar = new Menu();
 
-        // The toolbar of the main frame.
         Toolbar toolBar = new Toolbar();
 
         decodePanel = new RepresentBytesPane();
