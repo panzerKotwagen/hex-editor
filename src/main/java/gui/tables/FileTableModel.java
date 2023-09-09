@@ -9,14 +9,29 @@ import javax.swing.table.AbstractTableModel;
  * contents of a file in binary format.
  */
 public class FileTableModel extends AbstractTableModel {
-    //TODO: Vars description
-    private int offset = 0;
-    private HexEditor hexEditor;
-    private byte[] buffer;
+
+    /**
+     * The file data is partially saved in buffer.
+     */
     private final int bufferSize = 1024;
 
     /**
-     * The column count of the TableModel.
+     * The position of the current saved buffer in the file.
+     */
+    private int offset = 0;
+
+    /**
+     * The file to edit in binary format.
+     */
+    private HexEditor hexEditor;
+
+    /**
+     * The buffer to save a part of the file data.
+     */
+    private byte[] buffer;
+
+    /**
+     * The column count of the model.
      */
     private int columnCount;
 
@@ -25,7 +40,7 @@ public class FileTableModel extends AbstractTableModel {
      * allocated for displaying bytes.
      * The first column is always assigned to the offset.
      *
-     * @param byteColumnCount - the byte column count of the model
+     * @param byteColumnCount the byte column count of the model
      */
     public FileTableModel(int byteColumnCount) {
         this.columnCount = byteColumnCount + 1;
@@ -114,7 +129,8 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the name of the column.
+     * Returns the name of the column. The first column corresponds
+     * to the offset the rest are byte position.
      *
      * @param columnIndex the column being queried
      * @return column name
@@ -128,7 +144,7 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Fills the TableModel with the file data deleting previous.
+     * Sets the binary file from which the data is taken.
      *
      * @param hex the file which data is read
      */
@@ -140,7 +156,7 @@ public class FileTableModel extends AbstractTableModel {
 
     /**
      * Returns true if the cell at row and column is editable.
-     * Otherwise, invoking setValueAt on the cell will have no effect.
+     * The offset column is not editable.
      *
      * @param row    the row whose value is to be queried
      * @param column the column whose value is to be queried
@@ -156,7 +172,8 @@ public class FileTableModel extends AbstractTableModel {
 
     /**
      * Returns the byte value from model data at the specified index
-     * as if the whole file content was stored in one array.
+     * as if the whole file content was stored in one array. In other
+     * words, returns the byte at the specified position from the file.
      *
      * @param index byte index
      * @return the byte value at the specified index
@@ -167,8 +184,11 @@ public class FileTableModel extends AbstractTableModel {
 
     /**
      * Returns the byte index as if the whole file content
-     * was stored in one array.
-     * @param rowIndex row index of the cell
+     * was stored in one array. It is the same as getting the index
+     * of a one-dimensional array, which is represented as
+     * two-dimensional.
+     *
+     * @param rowIndex    row index of the cell
      * @param columnIndex column index of the cell
      * @return the fake byte index
      */
@@ -177,7 +197,7 @@ public class FileTableModel extends AbstractTableModel {
     }
 
     /**
-     * Updates current visible table part.
+     * Updates current visible model part.
      */
     public void updateModel() {
         buffer = hexEditor.read(offset, bufferSize);

@@ -1,10 +1,10 @@
 package gui.actions;
 
 import editor.HexEditor;
-import gui.dialog.windows.InputDialogWindow;
 import gui.tables.FileTable;
 import gui.tables.FileTableModel;
 import gui.window.MainWindow;
+import gui.dialog.windows.InputDialogWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +26,9 @@ public class EditFileActions {
     public static EditFileAction insertAct;
     public static EditFileAction findAct;
 
+    /**
+     * The main application window.
+     */
     private static MainWindow frame;
 
     /**
@@ -38,8 +41,15 @@ public class EditFileActions {
      */
     private static FileTableModel tableModel;
 
+    /**
+     * The clipboard in which bytes are saved after cut and copy
+     * operations.
+     */
     private static byte[] byteClipboard;
 
+    /**
+     * The file to edit.
+     */
     private static HexEditor hexEditor;
 
     /**
@@ -53,10 +63,21 @@ public class EditFileActions {
      */
     private static int count;
 
+    /**
+     * Constructs the EditFileAction objects.
+     */
     public EditFileActions() {
         makeEditFileActions();
     }
 
+    /**
+     * Initializes the static variables.
+     *
+     * @param fileTable  the table with file data
+     * @param tableModel the model of the table
+     * @param hex        the file to edit
+     * @param win        the main application window
+     */
     public static void init(FileTable fileTable, FileTableModel tableModel, HexEditor hex, MainWindow win) {
         EditFileActions.fileTable = fileTable;
         EditFileActions.tableModel = tableModel;
@@ -65,87 +86,8 @@ public class EditFileActions {
     }
 
     /**
-     * The class describes Action performing file edit operations.
-     */
-    public class EditFileAction extends AbstractAction {
-        public EditFileAction(String name, int mnemonicKey,
-                              int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    ActionEvent.CTRL_MASK));
-            putValue(MNEMONIC_KEY, mnemonicKey);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-
-            switch (comStr) {
-                case "Cut":
-                    cut();
-                    break;
-                case "Copy":
-                    copy();
-                    break;
-                case "Paste":
-                    paste();
-                    break;
-                case "Insert":
-                    insert();
-                    break;
-                case "Add":
-                    add();
-                    break;
-                case "Find":
-                    find();
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Creates static action instances for using them by buttons.
-     */
-    private void makeEditFileActions() {
-        //TODO: Fix hotkeys
-        cutAct = new EditFileAction(
-                "Cut",
-                KeyEvent.VK_B,
-                KeyEvent.VK_B,
-                "Cut the selected byte block and save it to clipboard.");
-        copyAct = new EditFileAction(
-                "Copy",
-                KeyEvent.VK_C,
-                KeyEvent.VK_C,
-                "Copy the selected byte block to clipboard.");
-        pasteAct = new EditFileAction(
-                "Paste",
-                KeyEvent.VK_V,
-                KeyEvent.VK_V,
-                "Paste the byte block saved in the clipboard.");
-        insertAct = new EditFileAction(
-                "Insert",
-                KeyEvent.VK_I,
-                KeyEvent.VK_I,
-                "");
-        addAct = new EditFileAction(
-                "Add",
-                KeyEvent.VK_A,
-                KeyEvent.VK_A,
-                "");
-        findAct = new EditFileAction(
-                "Find",
-                KeyEvent.VK_F,
-                KeyEvent.VK_F,
-                "");
-
-        // The functions are not available until a file is opened
-        unblockEditActions(false);
-    }
-
-    /**
      * Sets whether actions are enabled or not.
+     *
      * @param newValue true - to allow, false - to forbid
      */
     public static void unblockEditActions(boolean newValue) {
@@ -158,7 +100,8 @@ public class EditFileActions {
     }
 
     /**
-     * Updates the offset of the selected byte in the table.
+     * Updates the offset and count of the selected bytes in the
+     * table.
      */
     private static void updateSelectedByteOffset() {
         offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
@@ -167,7 +110,59 @@ public class EditFileActions {
     }
 
     /**
-     * Cuts the selected byte block into clipboard.
+     * Creates static Action instances for using them by buttons.
+     */
+    private void makeEditFileActions() {
+        cutAct = new EditFileAction(
+                "Cut",
+                KeyEvent.VK_B,
+                KeyEvent.VK_B,
+                "Cut the selected and save it on the clipboard.");
+        copyAct = new EditFileAction(
+                "Copy",
+                KeyEvent.VK_C,
+                KeyEvent.VK_C,
+                "Copy the selected on the clipboard.");
+        pasteAct = new EditFileAction(
+                "Paste",
+                KeyEvent.VK_V,
+                KeyEvent.VK_V,
+                "Paste block byte on the clipboard to file.");
+        insertAct = new EditFileAction(
+                "Insert",
+                KeyEvent.VK_I,
+                KeyEvent.VK_I,
+                "Insert arbitrary bytes into file.");
+        addAct = new EditFileAction(
+                "Add",
+                KeyEvent.VK_A,
+                KeyEvent.VK_A,
+                "Add arbitrary bytes into file.");
+        findAct = new EditFileAction(
+                "Find",
+                KeyEvent.VK_F,
+                KeyEvent.VK_F,
+                "Find a byte mask in the file.");
+
+        copyAct.putValue(
+                AbstractAction.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK)
+        );
+        cutAct.putValue(
+                AbstractAction.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_DOWN_MASK)
+        );
+        pasteAct.putValue(
+                AbstractAction.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.ALT_DOWN_MASK)
+        );
+
+        // The functions are not available until a file is opened
+        unblockEditActions(false);
+    }
+
+    /**
+     * Cuts the selected byte block onto clipboard.
      */
     private void cut() {
         updateSelectedByteOffset();
@@ -177,7 +172,7 @@ public class EditFileActions {
     }
 
     /**
-     * Copies the selected byte block into clipboard.
+     * Copies the selected byte block onto clipboard.
      */
     private void copy() {
         updateSelectedByteOffset();
@@ -198,8 +193,8 @@ public class EditFileActions {
     }
 
     /**
-     * Pastes the given byte block starting from the selected cell
-     * with replacement.
+     * Opens the dialog box for entering bytes inserted into the
+     * selected position with the replacement.
      */
     private void insert() {
         updateSelectedByteOffset();
@@ -214,8 +209,8 @@ public class EditFileActions {
     }
 
     /**
-     * Inserts the byte block to the selected position with the rest
-     * offset to the right.
+     * Opens the dialog box for entering bytes inserted into the
+     * selected position with the rest offset to the right.
      */
     private void add() {
         updateSelectedByteOffset();
@@ -229,6 +224,9 @@ public class EditFileActions {
         tableModel.updateModel();
     }
 
+    /**
+     * Opens the dialog box for entering bytes to search in the file.
+     */
     private void find() {
         InputDialogWindow win = new InputDialogWindow(frame, "Find");
         byte[] bytes = win.getData();
@@ -238,18 +236,19 @@ public class EditFileActions {
 
         long res = hexEditor.find(0, bytes);
 
-        if (res == -1)
-        {
+        if (res == -1) {
             JOptionPane.showMessageDialog(
                     frame, "The specified byte mask has not been found.");
             return;
         }
 
+        // Get the row number
         res = res / (tableModel.getColumnCount() - 1);
 
-        Adjustable e = frame.viewFilePane.getVerticalScrollBar();
+        Adjustable e = frame.fileViewPanel.getVerticalScrollBar();
 
-        e.setValue((int)res * 40);
+        // One line corresponds to the 40 value of the scrollbar.
+        e.setValue((int) res * 40);
 
         frame.updateFrame();
     }
@@ -272,7 +271,6 @@ public class EditFileActions {
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
 
-            //
             if (e.isControlDown())
                 return;
 
@@ -303,6 +301,46 @@ public class EditFileActions {
 
             num.append(c);
             return (byte) Long.parseLong(num.toString(), 16);
+        }
+    }
+
+    /**
+     * The class describes Action performing file edit operations.
+     */
+    public class EditFileAction extends AbstractAction {
+        public EditFileAction(String name, int mnemonicKey,
+                              int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+
+            switch (comStr) {
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    paste();
+                    break;
+                case "Insert":
+                    insert();
+                    break;
+                case "Add":
+                    add();
+                    break;
+                case "Find":
+                    find();
+                    break;
+            }
         }
     }
 }

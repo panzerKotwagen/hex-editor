@@ -7,8 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Describes the table that is designed to display the contents of
- * a file in binary format.
+ * Describes the table to display the contents of a file in binary
+ * format.
  */
 public class FileTable extends JTable {
 
@@ -46,17 +46,15 @@ public class FileTable extends JTable {
      */
     public FileTable(FileTableModel tableModel) {
         super(tableModel);
-
-        this.setRowHeight(40);
-        this.setIntercellSpacing(new Dimension(10, 10));
-        this.setShowGrid(false);
-        this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        this.setCellSelectionEnabled(true);
-        this.getSelectionModel().setSelectionMode(
-                ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        this.getColumnModel().setSelectionModel(new ColumnSelectionModel());
-
-        setColumnsWidth(this);
+        setRowHeight(40);
+        setIntercellSpacing(new Dimension(10, 10));
+        setShowGrid(false);
+        setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        setCellSelectionEnabled(true);
+        getSelectionModel().setSelectionMode(
+           ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        getColumnModel().setSelectionModel(new ColumnSelectionModel());
+        setColumnsWidth();
     }
 
     /**
@@ -78,19 +76,25 @@ public class FileTable extends JTable {
 
         FileTableModel tableModel = (FileTableModel) this.getModel();
         tableModel.setColumnCount(columnCount);
-        setColumnsWidth(this);
+        setColumnsWidth();
     }
 
     /**
-     * Sets preferred width for every column.
+     * Sets preferred width for every column in a given table.
      */
-    public static void setColumnsWidth(JTable table) {
-        table.getColumnModel().getColumn(0).setPreferredWidth(
-                OFFSET_COLUMN_WIDTH);
+    public static void setColumnsWidth(JTable table, int width) {
         for (int i = 1; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(
-                    BYTE_COLUMN_WIDTH);
+            table.getColumnModel().getColumn(i).setPreferredWidth(width);
         }
+    }
+
+    /**
+     * Sets the specified column width for instance of the FileTable.
+     */
+    public void setColumnsWidth() {
+        setColumnsWidth(this, BYTE_COLUMN_WIDTH);
+        this.getColumnModel().getColumn(0).setPreferredWidth(
+                OFFSET_COLUMN_WIDTH);
     }
 
     /**
@@ -109,9 +113,7 @@ public class FileTable extends JTable {
      */
     public static FileTable createTable(HexEditor dataSource) {
         FileTableModel model = new FileTableModel(16);
-
         model.setDataSource(dataSource);
-
         return new FileTable(model);
     }
 

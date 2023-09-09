@@ -24,8 +24,7 @@ public class InputTable extends JTable {
         this.setShowGrid(true);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.setCellSelectionEnabled(false);
-        FileTable.setColumnsWidth(this);
-        this.getColumnModel().getColumn(0).setPreferredWidth(50);
+        FileTable.setColumnsWidth(this, 50);
         this.addKeyListener(new TableKeyboardInput(this));
     }
 
@@ -46,23 +45,39 @@ public class InputTable extends JTable {
     }
 
     /**
-     * The class that describes model for the InputTable.
+     * The class that describes limited-size model for the InputTable.
      */
     private static class InputTableModel extends AbstractTableModel {
-        //TODO: Add comments
+
         static public final int MAX_DATA_SIZE = 32;
+
+        /**
+         * The list to store inputted bytes.
+         */
         ArrayList<Byte> data = new ArrayList<>();
 
+        /**
+         * Return fixed row count.
+         */
         @Override
         public int getRowCount() {
             return 4;
         }
 
+        /**
+         * Return fixed column count.
+         */
         @Override
         public int getColumnCount() {
             return 8;
         }
 
+        /**
+         * Returns the bytes inputted by user as hex number in string
+         * format. Returns "..." for the empty cells.
+         * @param rowIndex        the row whose value is to be queried
+         * @param columnIndex     the column whose value is to be queried
+         */
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             try {
@@ -72,20 +87,35 @@ public class InputTable extends JTable {
             }
         }
 
+        /**
+         * All columns are designated as numeric.
+         * @param columnIndex  the column being queried
+         */
         @Override
         public Class<Number> getColumnClass(int columnIndex) {
             return Number.class;
         }
 
+        /**
+         * Return the column number.
+         */
         @Override
         public String getColumnName(int columnIndex) {
             return String.format("%02X", columnIndex);
         }
 
+        /**
+         * It is the same as getting the index of a one-dimensional
+         * array, which is represented as two-dimensional.
+         */
         public int getIndex(int rowIndex, int columnIndex) {
             return rowIndex * (getColumnCount()) + columnIndex;
         }
 
+        /**
+         * Adds the new Byte value to the list or replace an old at
+         * the same position.
+         */
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             int idx = getIndex(rowIndex, columnIndex);
@@ -114,16 +144,25 @@ public class InputTable extends JTable {
      * The KeyListener for the keyboard input into the table.
      */
     private static class TableKeyboardInput extends KeyAdapter {
+
         /**
          * The number that is written to cell.
          */
         private final StringBuilder num = new StringBuilder();
+
+        /**
+         * The InputTable to edit.
+         */
         InputTable table;
+
         /**
          * The cell position in which the number to be written.
          */
         private int offset = 0;
 
+        /**
+         * Sets the table to edit.
+         */
         public TableKeyboardInput(InputTable table) {
             this.table = table;
         }

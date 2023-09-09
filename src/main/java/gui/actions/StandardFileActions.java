@@ -173,7 +173,7 @@ public class StandardFileActions {
             }
         });
 
-        frame.viewFilePane.setViewportView(table);
+        frame.fileViewPanel.setViewportView(table);
 
         frame.updateFrame();
     }
@@ -184,7 +184,7 @@ public class StandardFileActions {
     private void close() {
         if (maybeSave()) {
             hexEditor.closeFile();
-            frame.viewFilePane.getViewport().remove(0);
+            frame.fileViewPanel.getViewport().remove(0);
             fileIsOpened = false;
             unblockFileButtons();
             frame.updateFrame();

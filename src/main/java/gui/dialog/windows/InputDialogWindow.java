@@ -7,16 +7,44 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * The class describes dialog window in which a user can enter a
+ * The class describes the dialog window in which a user can enter a
  * block of bytes.
  */
 public class InputDialogWindow extends JDialog {
+
+    /**
+     * The inputted data.
+     */
     private byte[] data;
+
+    /**
+     * The label placed
+     */
     private JLabel label;
+
+    /**
+     * The button which performs the action.
+     */
     private JButton btnDo;
+
+    /**
+     * The button which cancels action and closes the window.
+     */
     private JButton btnCancel;
+
+    /**
+     * The panel with the buttons.
+     */
     private JPanel panelButtons;
+
+    /**
+     * The panel for placing the label.
+     */
     private JPanel panelLabel;
+
+    /**
+     * The panel in which the table is placed.
+     */
     private JScrollPane panelTable;
 
     /**
@@ -56,9 +84,7 @@ public class InputDialogWindow extends JDialog {
             this.setVisible(false);
         });
 
-        btnCancel.addActionListener(e -> {
-            this.setVisible(false);
-        });
+        btnCancel.addActionListener(e -> this.setVisible(false));
 
         panelButtons.add(btnDo);
         panelButtons.add(btnCancel);

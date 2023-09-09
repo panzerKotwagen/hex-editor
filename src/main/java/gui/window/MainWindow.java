@@ -17,12 +17,12 @@ public class MainWindow extends JFrame {
     /**
      * The pane for manipulation with file data.
      */
-    public final JScrollPane viewFilePane;
+    public final JScrollPane fileViewPanel;
 
     /**
      * The pane on which byte decode is placed.
      */
-    public final RepresentBytesPane decodePanel;
+    public final ByteRepresentPanel decodePanel;
 
     /**
      * Initializes the application window.
@@ -43,9 +43,9 @@ public class MainWindow extends JFrame {
 
         Toolbar toolBar = new Toolbar();
 
-        decodePanel = new RepresentBytesPane();
+        decodePanel = new ByteRepresentPanel();
 
-        viewFilePane = new JScrollPane();
+        fileViewPanel = new JScrollPane();
 
         this.add(toolBar, BorderLayout.NORTH);
 
@@ -53,7 +53,7 @@ public class MainWindow extends JFrame {
 
         this.add(decodePanel, BorderLayout.SOUTH);
 
-        this.add(viewFilePane, BorderLayout.CENTER);
+        this.add(fileViewPanel, BorderLayout.CENTER);
 
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -68,15 +68,15 @@ public class MainWindow extends JFrame {
     /**
      * Sets the specified font for every component.
      *
-     * @param f new font
+     * @param font new font
      */
-    public static void setUIFont(javax.swing.plaf.FontUIResource f) {
+    public static void setUIFont(javax.swing.plaf.FontUIResource font) {
         Enumeration<Object> keys = UIManager.getDefaults().keys();
         while (keys.hasMoreElements()) {
             Object key = keys.nextElement();
             Object value = UIManager.get(key);
             if (value instanceof javax.swing.plaf.FontUIResource)
-                UIManager.put(key, f);
+                UIManager.put(key, font);
         }
     }
 

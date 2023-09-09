@@ -9,7 +9,7 @@ import java.util.HashMap;
 /**
  * The panel on which byte decode is placed.
  */
-public class RepresentBytesPane extends JPanel {
+public class ByteRepresentPanel extends JPanel {
 
     /**
      * Text fields in which byte block represented as number.
@@ -25,16 +25,19 @@ public class RepresentBytesPane extends JPanel {
             "Unsigned 16 bit", "Unsigned 64 bit", "Float 32 bit",
             "Double 64 bit"};
 
-    public RepresentBytesPane() {
+    /**
+     * Constructs the panel.
+     */
+    public ByteRepresentPanel() {
         super(new GridLayout(5, 4, 5, 5));
         this.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        makeBitValuesPanel();
+        makeByteRepresentPanel();
     }
 
     /**
-     * Makes the panel on which bit represent values are placed on.
+     * Makes the panel on which byte represent values are placed on.
      */
-    private void makeBitValuesPanel() {
+    private void makeByteRepresentPanel() {
         for (int i = 0; i < 10; i++) {
             JLabel label = new JLabel(labelTexts[i]);
             label.setHorizontalAlignment(JLabel.RIGHT);
@@ -48,7 +51,7 @@ public class RepresentBytesPane extends JPanel {
     }
 
     /**
-     * Fills the bit represent panel with the values of byte block.
+     * Fills the byte represent panel with the values of byte block.
      */
     public void fillPane(ByteSequence byteSequence) {
         textFields.get("Signed 8 bit").setText(String.valueOf(
