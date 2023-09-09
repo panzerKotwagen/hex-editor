@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.READ;
@@ -265,8 +267,22 @@ public class HexEditor {
                 long fileSize = r.length();
                 long newOffset;
 
-                sourceChannel.transferTo(offset, (fileSize - offset),
-                        targetChannel);
+                try {
+                    sourceChannel.transferTo(offset, (fileSize - offset),
+                            targetChannel);
+                }
+                catch (IllegalArgumentException e) {
+                    // If the insert offset is bigger than file size
+                    // fill (offset - fileSize) positions with zeros.
+                    int zeroCount = (int) (offset - fileSize);
+                    byte[] result = new byte[zeroCount + addedBytes.length];
+                    System.arraycopy(addedBytes, 0, result, zeroCount, addedBytes.length);
+
+                    addedBytes = result;
+
+                    offset = fileSize;
+                }
+
                 sourceChannel.truncate(offset);
 
                 r.seek(offset);

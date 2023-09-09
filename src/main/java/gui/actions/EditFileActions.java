@@ -166,20 +166,28 @@ public class EditFileActions {
      */
     private void cut() {
         updateSelectedByteOffset();
-        copy();
-        hexEditor.delete(offset, count);
-        tableModel.updateModel();
+        if (copy()) {
+            hexEditor.delete(offset, count);
+            tableModel.updateModel();
+        }
     }
 
     /**
      * Copies the selected byte block onto clipboard.
      */
-    private void copy() {
+    private boolean copy() {
         updateSelectedByteOffset();
         byteClipboard = new byte[count];
         for (int i = 0; i < count; i++) {
-            byteClipboard[i] = tableModel.getValueByIndex(offset + i);
+            try {
+                byteClipboard[i] = tableModel.getValueByIndex(offset + i);
+            }
+            catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+                byteClipboard = new byte[0];
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -271,7 +279,8 @@ public class EditFileActions {
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
 
-            if (e.isControlDown())
+            // if user is using hotkeys
+            if (e.isControlDown() || e.isAltDown())
                 return;
 
             if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)

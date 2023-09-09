@@ -195,6 +195,7 @@ public class StandardFileActions {
      * Saves the current opened file.
      */
     private boolean saveFile() {
+        //TODO: Add successful operation message
         if (!fileIsOpened) {
             return false;
         } else {
