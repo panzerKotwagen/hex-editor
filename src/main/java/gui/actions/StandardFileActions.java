@@ -102,7 +102,7 @@ public class StandardFileActions {
      * Shows the dialog window in which the user is prompted to save
      * the file.
      *
-     * @return user response
+     * @return false if the cancel was pressed, true otherwise
      */
     private boolean maybeSave() {
         if (!fileIsOpened)
@@ -195,7 +195,6 @@ public class StandardFileActions {
      * Saves the current opened file.
      */
     private boolean saveFile() {
-        //TODO: Add successful operation message
         if (!fileIsOpened) {
             return false;
         } else {

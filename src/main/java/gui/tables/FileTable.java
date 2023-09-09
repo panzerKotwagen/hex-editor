@@ -4,7 +4,10 @@ import editor.ByteSequence;
 import editor.HexEditor;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.io.File;
 
 /**
  * Describes the table to display the contents of a file in binary
@@ -55,6 +58,8 @@ public class FileTable extends JTable {
            ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         getColumnModel().setSelectionModel(new ColumnSelectionModel());
         setColumnsWidth();
+        getTableHeader().setReorderingAllowed(false);
+        setDefaultRenderer(Number.class, new CustomTableCellRenderer());
     }
 
     /**
@@ -161,4 +166,30 @@ public class FileTable extends JTable {
     }
 }
 
+class Render extends JLabel implements TableCellRenderer {
 
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        return null;
+    }
+}
+
+class CustomTableCellRenderer extends DefaultTableCellRenderer
+{
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
+        Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
+
+        FileTable fTable = (FileTable) table;
+        fTable.updateSelectedCellIndex();
+
+        if (isSelected)
+            cell.setBackground(new Color(0xA2DEEB));
+        else if (fTable.selectedRowIndexStart <= row && row < fTable.selectedRowIndexEnd)
+            cell.setBackground(new Color(0xA2DEEB));
+        else
+            cell.setBackground(new Color(0xFFFFFF));
+
+        return cell;
+    }
+}
