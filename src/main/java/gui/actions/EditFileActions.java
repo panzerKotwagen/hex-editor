@@ -104,8 +104,8 @@ public class EditFileActions {
      * table.
      */
     private static void updateSelectedByteOffset() {
-        offset = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
-        int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
+        offset = tableModel.getIndex(fileTable.selectedRowIndexMin, fileTable.selectedColIndexMin);
+        int end = tableModel.getIndex(fileTable.selectedRowIndexMax, fileTable.selectedColIndexMax);
         count = end - offset + 1;
     }
 

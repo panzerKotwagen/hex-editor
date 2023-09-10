@@ -151,7 +151,6 @@ public class StandardFileActions {
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                table.updateSelectedCellIndex();
                 frame.decodePanel.fillPane(table.getByteSequence());
             }
         });

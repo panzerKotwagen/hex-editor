@@ -5,9 +5,7 @@ import editor.HexEditor;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.io.File;
 
 /**
  * Describes the table to display the contents of a file in binary
@@ -41,6 +39,11 @@ public class FileTable extends JTable {
      */
     public int selectedColIndexEnd;
 
+    public int selectedRowIndexMin;
+    public int selectedRowIndexMax;
+    public int selectedColIndexMin;
+    public int selectedColIndexMax;
+
     /**
      * Constructs a FileTable that is initialized with tableModel as
      * the data model.
@@ -49,17 +52,34 @@ public class FileTable extends JTable {
      */
     public FileTable(FileTableModel tableModel) {
         super(tableModel);
+
         setRowHeight(40);
+
         setIntercellSpacing(new Dimension(10, 10));
+
         setShowGrid(false);
+
         setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
         setCellSelectionEnabled(true);
+
         getSelectionModel().setSelectionMode(
-           ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        getColumnModel().setSelectionModel(new ColumnSelectionModel());
+           ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+        getColumnModel().getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
         setColumnsWidth();
+
         getTableHeader().setReorderingAllowed(false);
+
         setDefaultRenderer(Number.class, new CustomTableCellRenderer());
+
+        getSelectionModel().addListSelectionListener(
+                e -> updateSelectedCellIndex());
+
+        getColumnModel().getSelectionModel().addListSelectionListener(
+                e -> updateSelectedCellIndex());
     }
 
     /**
@@ -106,10 +126,17 @@ public class FileTable extends JTable {
      * Updates selected cell indexes.
      */
     public void updateSelectedCellIndex() {
-        selectedRowIndexStart = getSelectedRow();
-        selectedRowIndexEnd = getSelectionModel().getMaxSelectionIndex();
-        selectedColIndexStart = getSelectedColumn();
+        selectedRowIndexStart = getSelectionModel().getAnchorSelectionIndex();
+        selectedRowIndexEnd = getSelectionModel().getLeadSelectionIndex();
+        selectedColIndexStart = getColumnModel().getSelectionModel()
+                .getAnchorSelectionIndex();
         selectedColIndexEnd = getColumnModel().getSelectionModel()
+                .getLeadSelectionIndex();
+
+        selectedRowIndexMin = getSelectedRow();
+        selectedRowIndexMax = getSelectionModel().getMaxSelectionIndex();
+        selectedColIndexMin = getSelectedColumn();
+        selectedColIndexMax = getColumnModel().getSelectionModel()
                 .getMaxSelectionIndex();
     }
 
@@ -120,22 +147,6 @@ public class FileTable extends JTable {
         FileTableModel model = new FileTableModel(16);
         model.setDataSource(dataSource);
         return new FileTable(model);
-    }
-
-    /**
-     * The ListSelectionModel in which it is forbidden to select the
-     * first column.
-     */
-    private static class ColumnSelectionModel
-            extends DefaultListSelectionModel {
-        @Override
-        public void setSelectionInterval(int index0, int index1) {
-            if (index0 == 0) {
-                if (index1 != 0) index0 = 1;
-                else return;
-            } else if (index1 == 0) return;
-            super.setSelectionInterval(index0, index1);
-        }
     }
 
     /**
@@ -151,8 +162,8 @@ public class FileTable extends JTable {
         for (int i = 0; i < 8; i++) {
             try {
                 int index = tableModel.getIndex(
-                        this.selectedRowIndexStart,
-                        this.selectedColIndexStart);
+                        this.selectedRowIndexEnd,
+                        this.selectedColIndexEnd);
                 array[i] = tableModel.getValueByIndex(index);
             }
             // If the number of bytes in the file starting from the
@@ -164,13 +175,12 @@ public class FileTable extends JTable {
 
         return new ByteSequence(array);
     }
-}
-
-class Render extends JLabel implements TableCellRenderer {
 
     @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        return null;
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        if (columnIndex == 0)
+            return;
+        super.changeSelection(rowIndex, columnIndex, false, extend);
     }
 }
 
@@ -181,13 +191,31 @@ class CustomTableCellRenderer extends DefaultTableCellRenderer
         Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
 
         FileTable fTable = (FileTable) table;
-        fTable.updateSelectedCellIndex();
+        boolean down = fTable.selectedRowIndexEnd > fTable.selectedRowIndexStart;
 
-        if (isSelected)
+        if (down) {
+            if (fTable.selectedRowIndexStart < row
+                    && row < fTable.selectedRowIndexEnd)
+                cell.setBackground(new Color(0xA2DEEB));
+            else if (row == fTable.selectedRowIndexStart && column >= fTable.selectedColIndexStart)
+                cell.setBackground(new Color(0xA2DEEB));
+            else if (row == fTable.selectedRowIndexEnd && column <= fTable.selectedColIndexEnd)
+                cell.setBackground(new Color(0xA2DEEB));
+            else
+                cell.setBackground(new Color(0xFFFFFF));
+        } else if (fTable.selectedRowIndexStart != fTable.selectedRowIndexEnd) {
+            if (fTable.selectedRowIndexEnd < row
+                    && row < fTable.selectedRowIndexStart)
+                cell.setBackground(new Color(0xA2DEEB));
+            else if (row == fTable.selectedRowIndexStart && column <= fTable.selectedColIndexStart)
+                cell.setBackground(new Color(0xA2DEEB));
+            else if (row == fTable.selectedRowIndexEnd && column >= fTable.selectedColIndexEnd)
+                cell.setBackground(new Color(0xA2DEEB));
+            else
+                cell.setBackground(new Color(0xFFFFFF));
+        } else if (isSelected) {
             cell.setBackground(new Color(0xA2DEEB));
-        else if (fTable.selectedRowIndexStart <= row && row < fTable.selectedRowIndexEnd)
-            cell.setBackground(new Color(0xA2DEEB));
-        else
+        } else
             cell.setBackground(new Color(0xFFFFFF));
 
         return cell;
