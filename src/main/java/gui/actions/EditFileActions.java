@@ -56,7 +56,7 @@ public class EditFileActions {
      * The variable to indicate the position of the file starting
      * from which an operation will perform.
      */
-    private static int offset;
+    private static int offset = 0;
 
     /**
      * Selected cell count.
@@ -104,8 +104,12 @@ public class EditFileActions {
      * table.
      */
     private static void updateSelectedByteOffset() {
-        offset = tableModel.getIndex(fileTable.selectedRowIndexMin, fileTable.selectedColIndexMin);
-        int end = tableModel.getIndex(fileTable.selectedRowIndexMax, fileTable.selectedColIndexMax);
+        int start = tableModel.getIndex(fileTable.selectedRowIndexStart, fileTable.selectedColIndexStart);
+        int end = tableModel.getIndex(fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
+
+        offset = Math.min(start, end);
+        end = Math.max(start, end);
+
         count = end - offset + 1;
     }
 
@@ -273,7 +277,8 @@ public class EditFileActions {
         /**
          * The byte offset in the file.
          */
-        private int prevOffset = offset;
+        private int prevOffset;
+        private int currOffset;
 
         @Override
         public void keyPressed(KeyEvent e) {
@@ -285,8 +290,10 @@ public class EditFileActions {
 
             if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
                     || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
-                updateSelectedByteOffset();
-                hexEditor.insert(offset, getNum(e.getKeyChar()));
+                currOffset = tableModel.getIndex(
+                        fileTable.selectedRowIndexEnd, fileTable.selectedColIndexEnd);
+                byte b = getNum(e.getKeyChar());
+                hexEditor.insert(prevOffset, b);
                 tableModel.updateModel();
             }
         }
@@ -299,9 +306,9 @@ public class EditFileActions {
          */
         private byte getNum(char c) {
             // If another cell was selected
-            if (prevOffset != offset) {
+            if (prevOffset != currOffset && currOffset > 0) {
                 num.delete(0, num.length());
-                prevOffset = offset;
+                prevOffset = currOffset;
             }
 
             if (num.length() > 2) {

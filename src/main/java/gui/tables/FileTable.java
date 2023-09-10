@@ -39,11 +39,6 @@ public class FileTable extends JTable {
      */
     public int selectedColIndexEnd;
 
-    public int selectedRowIndexMin;
-    public int selectedRowIndexMax;
-    public int selectedColIndexMin;
-    public int selectedColIndexMax;
-
     /**
      * Constructs a FileTable that is initialized with tableModel as
      * the data model.
@@ -132,12 +127,6 @@ public class FileTable extends JTable {
                 .getAnchorSelectionIndex();
         selectedColIndexEnd = getColumnModel().getSelectionModel()
                 .getLeadSelectionIndex();
-
-        selectedRowIndexMin = getSelectedRow();
-        selectedRowIndexMax = getSelectionModel().getMaxSelectionIndex();
-        selectedColIndexMin = getSelectedColumn();
-        selectedColIndexMax = getColumnModel().getSelectionModel()
-                .getMaxSelectionIndex();
     }
 
     /**
