@@ -24,7 +24,7 @@ public class InputTable extends JTable {
         this.setShowGrid(true);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.setCellSelectionEnabled(false);
-        FileTable.setColumnsWidth(this, 50);
+        HexTable.setColumnsWidth(this, 50);
         this.addKeyListener(new TableKeyboardInput(this));
         getTableHeader().setReorderingAllowed(false);
     }

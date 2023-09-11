@@ -8,7 +8,7 @@ import javax.swing.table.AbstractTableModel;
  * Describes TableModel with dynamic column count provides displaying
  * contents of a file in binary format.
  */
-public class FileTableModel extends AbstractTableModel {
+public class HexTableModel extends AbstractTableModel {
 
     /**
      * The file data is partially saved in buffer.
@@ -42,7 +42,7 @@ public class FileTableModel extends AbstractTableModel {
      *
      * @param byteColumnCount the byte column count of the model
      */
-    public FileTableModel(int byteColumnCount) {
+    public HexTableModel(int byteColumnCount) {
         this.columnCount = byteColumnCount + 1;
     }
 

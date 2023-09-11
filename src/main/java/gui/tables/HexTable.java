@@ -11,7 +11,7 @@ import java.awt.*;
  * Describes the table to display the contents of a file in binary
  * format.
  */
-public class FileTable extends JTable {
+public class HexTable extends JTable {
 
     private static final int OFFSET_COLUMN_WIDTH = 120;
 
@@ -20,32 +20,32 @@ public class FileTable extends JTable {
     private static final int SCROLL_BAR_WIDTH = 20;
 
     /**
-     * The index of the starting selected row.
+     * The index of the anchor selected row.
      */
     public int selectedRowIndexStart;
 
     /**
-     * The index of the ending selected row.
+     * The index of the lead selected row.
      */
     public int selectedRowIndexEnd;
 
     /**
-     * The index of the starting selected column.
+     * The index of the anchor selected column.
      */
     public int selectedColIndexStart;
 
     /**
-     * The index of the ending selected column.
+     * The index of the lead selected column.
      */
     public int selectedColIndexEnd;
 
     /**
-     * Constructs a FileTable that is initialized with tableModel as
+     * Constructs a HexTable that is initialized with tableModel as
      * the data model.
      *
      * @param tableModel the data model for the table
      */
-    public FileTable(FileTableModel tableModel) {
+    public HexTable(HexTableModel tableModel) {
         super(tableModel);
 
         setRowHeight(40);
@@ -59,7 +59,7 @@ public class FileTable extends JTable {
         setCellSelectionEnabled(true);
 
         getSelectionModel().setSelectionMode(
-           ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+                ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         getColumnModel().getSelectionModel().setSelectionMode(
                 ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -71,10 +71,28 @@ public class FileTable extends JTable {
         setDefaultRenderer(Number.class, new CustomTableCellRenderer());
 
         getSelectionModel().addListSelectionListener(
-                e -> updateSelectedCellIndex());
+                e -> updateSelectionIndexes());
 
         getColumnModel().getSelectionModel().addListSelectionListener(
-                e -> updateSelectedCellIndex());
+                e -> updateSelectionIndexes());
+    }
+
+    /**
+     * Sets preferred width for every column in the given table.
+     */
+    public static void setColumnsWidth(JTable table, int width) {
+        for (int i = 1; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(width);
+        }
+    }
+
+    /**
+     * Creates a table containing the data of the given file.
+     */
+    public static HexTable createTable(HexEditor dataSource) {
+        HexTableModel model = new HexTableModel(16);
+        model.setDataSource(dataSource);
+        return new HexTable(model);
     }
 
     /**
@@ -94,22 +112,13 @@ public class FileTable extends JTable {
             this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         }
 
-        FileTableModel tableModel = (FileTableModel) this.getModel();
+        HexTableModel tableModel = (HexTableModel) this.getModel();
         tableModel.setColumnCount(columnCount);
         setColumnsWidth();
     }
 
     /**
-     * Sets preferred width for every column in a given table.
-     */
-    public static void setColumnsWidth(JTable table, int width) {
-        for (int i = 1; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(width);
-        }
-    }
-
-    /**
-     * Sets the specified column width for instance of the FileTable.
+     * Sets the specified column width for instance of the HexTable.
      */
     public void setColumnsWidth() {
         setColumnsWidth(this, BYTE_COLUMN_WIDTH);
@@ -120,7 +129,7 @@ public class FileTable extends JTable {
     /**
      * Updates selected cell indexes.
      */
-    public void updateSelectedCellIndex() {
+    public void updateSelectionIndexes() {
         selectedRowIndexStart = getSelectionModel().getAnchorSelectionIndex();
         selectedRowIndexEnd = getSelectionModel().getLeadSelectionIndex();
         selectedColIndexStart = getColumnModel().getSelectionModel()
@@ -130,23 +139,14 @@ public class FileTable extends JTable {
     }
 
     /**
-     * Creates a table containing the data of the given file.
-     */
-    public static FileTable createTable(HexEditor dataSource) {
-        FileTableModel model = new FileTableModel(16);
-        model.setDataSource(dataSource);
-        return new FileTable(model);
-    }
-
-    /**
-     * Return the byte block starting from the
-     * selected byte and 7 more to the right of it.
-     *
-     * @return the byte block of length 8 starting from the selected byte
+     * Returns the ByteSequence of length 8 which filling with the
+     * bytes from the cells starting from the lead selected cell.
+     * If there are no enough cells to the right of the lead selected
+     * cell then returns sequence of less length.
      */
     public ByteSequence getByteSequence() {
         byte[] array = new byte[8];
-        FileTableModel tableModel = (FileTableModel) this.getModel();
+        HexTableModel tableModel = (HexTableModel) this.getModel();
 
         for (int i = 0; i < 8; i++) {
             try {
@@ -165,6 +165,10 @@ public class FileTable extends JTable {
         return new ByteSequence(array);
     }
 
+    /**
+     * Overridden to forbid the multiple selection when pressing ctrl
+     * and selection the offset column.
+     */
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
         if (columnIndex == 0)
@@ -173,13 +177,12 @@ public class FileTable extends JTable {
     }
 }
 
-class CustomTableCellRenderer extends DefaultTableCellRenderer
-{
+class CustomTableCellRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
         Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
 
-        FileTable fTable = (FileTable) table;
+        HexTable fTable = (HexTable) table;
         boolean down = fTable.selectedRowIndexEnd > fTable.selectedRowIndexStart;
 
         if (down) {
