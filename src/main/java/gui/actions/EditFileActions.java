@@ -319,7 +319,7 @@ public class EditFileActions {
         // Move vertical scroll bar to the match cell
         Adjustable e = frame.fileViewPanel.getVerticalScrollBar();
         // One line corresponds to the 40 value of the scrollbar
-        e.setValue((int) res * 40);
+        e.setValue(row * 40);
 
         // Move horizontal scroll bar to the match cell
         e = frame.fileViewPanel.getHorizontalScrollBar();
