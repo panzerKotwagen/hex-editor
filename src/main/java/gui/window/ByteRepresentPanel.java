@@ -1,6 +1,7 @@
 package gui.window;
 
 import editor.ByteSequence;
+import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,7 +30,7 @@ public class ByteRepresentPanel extends JPanel {
      * Constructs the panel.
      */
     public ByteRepresentPanel() {
-        super(new GridLayout(5, 4, 5, 5));
+        super(new MigLayout("wrap 4"));
         this.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         makeByteRepresentPanel();
     }
@@ -41,12 +42,16 @@ public class ByteRepresentPanel extends JPanel {
         for (int i = 0; i < 10; i++) {
             JLabel label = new JLabel(labelTexts[i]);
             label.setHorizontalAlignment(JLabel.RIGHT);
+
             JTextField textField = new JTextField();
             textField.setEnabled(false);
             textField.setDisabledTextColor(Color.BLACK);
+            textField.setPreferredSize(new Dimension(200, 10));
+
             textFields.put(labelTexts[i], textField);
+
             this.add(label);
-            this.add(textField);
+            this.add(textField, "w 100:600:1000");
         }
     }
 
