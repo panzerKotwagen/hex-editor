@@ -28,6 +28,8 @@ public class EditFileActions {
     public static EditFileAction findAct;
     public static EditFileAction zeroAct;
 
+    private static int maxBufferSize = 1024 * 1024 * 1024;
+
     /**
      * The main application window.
      */
@@ -231,16 +233,9 @@ public class EditFileActions {
      */
     private static boolean copy() {
         updateSelection();
-        byteClipboard = new byte[count];
-        for (int i = 0; i < count; i++) {
-            try {
-                byteClipboard[i] = tableModel.getValueByIndex(offset + i);
-            }
-            catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-                byteClipboard = new byte[0];
-                return false;
-            }
-        }
+        if (count >= maxBufferSize)
+            return false;
+        byteClipboard = hexEditor.read(offset, count);
         return true;
     }
 

@@ -31,7 +31,7 @@ public class MainWindow extends JFrame {
         super("Hex editor");
         setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 18));
 
-        this.setMinimumSize(new Dimension(600, 600));
+        this.setMinimumSize(new Dimension(650, 600));
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         setLocationRelativeTo(null);
