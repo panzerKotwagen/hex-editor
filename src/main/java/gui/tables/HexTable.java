@@ -4,7 +4,6 @@ import editor.ByteSequence;
 import editor.HexEditor;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 /**
@@ -68,7 +67,7 @@ public class HexTable extends JTable {
 
         getTableHeader().setReorderingAllowed(false);
 
-        setDefaultRenderer(Number.class, new CustomTableCellRenderer());
+        setDefaultRenderer(Number.class, new HexTableCellRenderer());
 
         getSelectionModel().addListSelectionListener(
                 e -> updateSelectionIndexes());
@@ -177,39 +176,4 @@ public class HexTable extends JTable {
     }
 }
 
-class CustomTableCellRenderer extends DefaultTableCellRenderer {
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
-        Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
 
-        HexTable fTable = (HexTable) table;
-        boolean down = fTable.selectedRowIndexEnd > fTable.selectedRowIndexStart;
-
-        if (down) {
-            if (fTable.selectedRowIndexStart < row
-                    && row < fTable.selectedRowIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            else if (row == fTable.selectedRowIndexStart && column >= fTable.selectedColIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            else if (row == fTable.selectedRowIndexEnd && column <= fTable.selectedColIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            else
-                cell.setBackground(new Color(0xFFFFFF));
-        } else if (fTable.selectedRowIndexStart != fTable.selectedRowIndexEnd) {
-            if (fTable.selectedRowIndexEnd < row
-                    && row < fTable.selectedRowIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            else if (row == fTable.selectedRowIndexStart && column <= fTable.selectedColIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            else if (row == fTable.selectedRowIndexEnd && column >= fTable.selectedColIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            else
-                cell.setBackground(new Color(0xFFFFFF));
-        } else if (isSelected) {
-            cell.setBackground(new Color(0xA2DEEB));
-        } else
-            cell.setBackground(new Color(0xFFFFFF));
-
-        return cell;
-    }
-}

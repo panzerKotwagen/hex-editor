@@ -5,6 +5,7 @@ import gui.tables.HexTable;
 import gui.tables.HexTableModel;
 import gui.window.MainWindow;
 import gui.dialog.windows.InputDialogWindow;
+import gui.tables.HexTableCellRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -296,9 +297,10 @@ public class EditFileActions {
 
     /**
      * Opens the dialog box for entering bytes to search in the file.
+     * Highlights the cell from which the match begins or displays the
+     * message that the specified sequence has not been found.
      */
     private static void find() {
-        //TODO: specify the match location
         InputDialogWindow win = new InputDialogWindow(frame, "Find");
         byte[] bytes = win.getData();
 
@@ -313,13 +315,20 @@ public class EditFileActions {
             return;
         }
 
-        // Get the row number
-        res = res / (tableModel.getColumnCount() - 1);
+        int col = (int) (res % (tableModel.getColumnCount() - 1)) + 1;
+        int row = (int) (res / (tableModel.getColumnCount() - 1));
 
+        HexTableCellRenderer.setFindRow(row);
+        HexTableCellRenderer.setFindCol(col);
+
+        // Move vertical scroll bar to the match cell
         Adjustable e = frame.fileViewPanel.getVerticalScrollBar();
-
-        // One line corresponds to the 40 value of the scrollbar.
+        // One line corresponds to the 40 value of the scrollbar
         e.setValue((int) res * 40);
+
+        // Move horizontal scroll bar to the match cell
+        e = frame.fileViewPanel.getHorizontalScrollBar();
+        e.setValue(col * 40);
 
         frame.updateFrame();
     }
