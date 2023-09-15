@@ -1,11 +1,10 @@
 package gui.actions;
 
 import editor.HexEditor;
+import gui.dialog.windows.InputDialogWindow;
 import gui.tables.HexTable;
 import gui.tables.HexTableModel;
 import gui.window.MainWindow;
-import gui.dialog.windows.InputDialogWindow;
-import gui.tables.HexTableCellRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,8 +27,6 @@ public class EditFileActions {
     public static EditFileAction findAct;
     public static EditFileAction zeroAct;
 
-    private static int maxBufferSize = 1024 * 1024 * 1024;
-
     /**
      * The main application window.
      */
@@ -46,10 +43,15 @@ public class EditFileActions {
     private static HexTableModel tableModel;
 
     /**
-     * The clipboard in which bytes are saved after cut and copy
+     * The buffer in which bytes are saved after cut and copy
      * operations.
      */
-    private static byte[] byteClipboard;
+    private static byte[] byteBuffer;
+
+    /**
+     * The maximum size of the buffer.
+     */
+    private static final int maxBufferSize = 1024 * 1024 * 1024;
 
     /**
      * The file to edit.
@@ -115,19 +117,19 @@ public class EditFileActions {
     private static void makeEditFileActions() {
         cutAct = new EditFileAction(
                 "Cut",
-                KeyEvent.VK_B,
-                KeyEvent.VK_B,
-                "Cut the selected and save it on the clipboard.");
+                KeyEvent.VK_X,
+                KeyEvent.VK_X,
+                "Cut (Alt+X)");
         copyAct = new EditFileAction(
                 "Copy",
                 KeyEvent.VK_C,
                 KeyEvent.VK_C,
-                "Copy the selected on the clipboard.");
+                "Copy (Alt+C)");
         pasteAct = new EditFileAction(
                 "Paste",
                 KeyEvent.VK_V,
                 KeyEvent.VK_V,
-                "Paste block byte on the clipboard to file.");
+                "Paste (Alt+V)");
         insertAct = new EditFileAction(
                 "Insert",
                 KeyEvent.VK_I,
@@ -142,7 +144,7 @@ public class EditFileActions {
                 "Find",
                 KeyEvent.VK_F,
                 KeyEvent.VK_F,
-                "Find a byte mask.");
+                "Find a pattern.");
         zeroAct = new EditFileAction(
                 "Zero",
                 KeyEvent.VK_Z,
@@ -218,7 +220,7 @@ public class EditFileActions {
     }
 
     /**
-     * Cuts the selected byte block onto clipboard.
+     * Cuts the selected byte block to the buffer.
      */
     private static void cut() {
         updateSelection();
@@ -229,23 +231,23 @@ public class EditFileActions {
     }
 
     /**
-     * Copies the selected byte block onto clipboard.
+     * Copies the selected byte block to the buffer.
      */
     private static boolean copy() {
         updateSelection();
         if (count >= maxBufferSize)
             return false;
-        byteClipboard = hexEditor.read(offset, count);
+        byteBuffer = hexEditor.read(offset, count);
         return true;
     }
 
     /**
-     * Pastes the byte block from the clipboard starting from the
+     * Pastes the byte block from the buffer starting from the
      * selected cell with replacement.
      */
     private static void paste() {
         updateSelection();
-        hexEditor.insert(offset, byteClipboard);
+        hexEditor.insert(offset, byteBuffer);
         tableModel.updateModel();
     }
 
@@ -306,15 +308,16 @@ public class EditFileActions {
 
         if (res == -1) {
             JOptionPane.showMessageDialog(
-                    frame, "The specified byte mask has not been found.");
+                    frame, "A pattern was not found.");
             return;
         }
 
         int col = (int) (res % (tableModel.getColumnCount() - 1)) + 1;
         int row = (int) (res / (tableModel.getColumnCount() - 1));
 
-        HexTableCellRenderer.setFindRow(row);
-        HexTableCellRenderer.setFindCol(col);
+        // Select the found cell
+        hexTable.getSelectionModel().addSelectionInterval(row, row);
+        hexTable.getColumnModel().getSelectionModel().setSelectionInterval(col, col);
 
         // Move vertical scroll bar to the match cell
         Adjustable e = frame.fileViewPanel.getVerticalScrollBar();
