@@ -5,6 +5,8 @@ import gui.window.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * The class describes the dialog window in which a user can enter a
@@ -85,6 +87,16 @@ public class InputDialogWindow extends JDialog {
         });
 
         btnCancel.addActionListener(e -> this.setVisible(false));
+
+        table.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    btnDo.doClick();
+                else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+                    btnCancel.doClick();
+            }
+        });
 
         panelButtons.add(btnDo);
         panelButtons.add(btnCancel);

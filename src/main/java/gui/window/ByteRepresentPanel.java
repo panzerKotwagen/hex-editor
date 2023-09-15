@@ -46,12 +46,11 @@ public class ByteRepresentPanel extends JPanel {
             JTextField textField = new JTextField();
             textField.setEnabled(false);
             textField.setDisabledTextColor(Color.BLACK);
-            textField.setPreferredSize(new Dimension(200, 10));
 
             textFields.put(labelTexts[i], textField);
 
             this.add(label);
-            this.add(textField, "w 100:600:1000");
+            this.add(textField, "w 100:300:300");
         }
     }
 

@@ -21,22 +21,22 @@ public class HexTable extends JTable {
     /**
      * The index of the anchor selected row.
      */
-    public int selectedRowIndexStart;
+    public int selectedRowIndexStart = 0;
 
     /**
      * The index of the lead selected row.
      */
-    public int selectedRowIndexEnd;
+    public int selectedRowIndexEnd = 0;
 
     /**
      * The index of the anchor selected column.
      */
-    public int selectedColIndexStart;
+    public int selectedColIndexStart = 1;
 
     /**
      * The index of the lead selected column.
      */
-    public int selectedColIndexEnd;
+    public int selectedColIndexEnd = 1;
 
     /**
      * Constructs a HexTable that is initialized with tableModel as
@@ -101,18 +101,27 @@ public class HexTable extends JTable {
      * @param frameWidth the width of the app window
      */
     public void updateTableView(int frameWidth) {
-        int columnCount = (frameWidth - OFFSET_COLUMN_WIDTH - SCROLL_BAR_WIDTH)
+        int newColumnCount = (frameWidth - OFFSET_COLUMN_WIDTH - SCROLL_BAR_WIDTH)
                 / BYTE_COLUMN_WIDTH;
 
-        if (columnCount < 16) {
-            columnCount = 16;
+        if (newColumnCount == this.getColumnCount())
+            return;
+
+        if (newColumnCount < 16) {
+            newColumnCount = 16;
             this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         } else {
             this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         }
 
         HexTableModel tableModel = (HexTableModel) this.getModel();
-        tableModel.setColumnCount(columnCount);
+        tableModel.setColumnCount(newColumnCount);
+
+        selectedRowIndexStart = 0;
+        selectedRowIndexEnd = 0;
+        selectedColIndexStart = 1;
+        selectedColIndexEnd = 1;
+
         setColumnsWidth();
     }
 
