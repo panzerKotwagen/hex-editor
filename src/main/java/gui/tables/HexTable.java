@@ -160,7 +160,7 @@ public class HexTable extends JTable {
             try {
                 int index = tableModel.getIndex(
                         this.selectedRowIndexEnd,
-                        this.selectedColIndexEnd);
+                        this.selectedColIndexEnd + i);
                 array[i] = tableModel.getValueByIndex(index);
             }
             // If the number of bytes in the file starting from the

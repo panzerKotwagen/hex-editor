@@ -223,6 +223,7 @@ public class EditFileActions {
      * Cuts the selected byte block to the buffer.
      */
     private static void cut() {
+        //TODO: When empty cell is selected
         updateSelection();
         if (copy()) {
             hexEditor.delete(offset, count);
@@ -234,6 +235,7 @@ public class EditFileActions {
      * Copies the selected byte block to the buffer.
      */
     private static boolean copy() {
+        //TODO: When empty cell is selected
         updateSelection();
         if (count >= maxBufferSize)
             return false;
@@ -246,6 +248,7 @@ public class EditFileActions {
      * selected cell with replacement.
      */
     private static void paste() {
+        //TODO: When empty cell is selected
         updateSelection();
         hexEditor.insert(offset, byteBuffer);
         tableModel.updateModel();
@@ -298,6 +301,7 @@ public class EditFileActions {
      * message that the specified sequence has not been found.
      */
     private static void find() {
+        //TODO: find starting from current pos
         InputDialogWindow win = new InputDialogWindow(frame, "Find");
         byte[] bytes = win.getData();
 
