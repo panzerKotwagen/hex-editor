@@ -21,22 +21,22 @@ public class HexTable extends JTable {
     /**
      * The index of the anchor selected row.
      */
-    public int selectedRowIndexStart = 0;
+    public int selectedRowIndexStart;
 
     /**
      * The index of the lead selected row.
      */
-    public int selectedRowIndexEnd = 0;
+    public int selectedRowIndexEnd;
 
     /**
      * The index of the anchor selected column.
      */
-    public int selectedColIndexStart = 1;
+    public int selectedColIndexStart;
 
     /**
      * The index of the lead selected column.
      */
-    public int selectedColIndexEnd = 1;
+    public int selectedColIndexEnd;
 
     /**
      * Constructs a HexTable that is initialized with tableModel as
@@ -116,11 +116,6 @@ public class HexTable extends JTable {
 
         HexTableModel tableModel = (HexTableModel) this.getModel();
         tableModel.setColumnCount(newColumnCount);
-
-        selectedRowIndexStart = 0;
-        selectedRowIndexEnd = 0;
-        selectedColIndexStart = 1;
-        selectedColIndexEnd = 1;
 
         setColumnsWidth();
     }
