@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.IntStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.READ;
@@ -192,7 +190,7 @@ public class HexEditor {
             ByteBuffer mBuf = ByteBuffer.wrap(newBytes);
             mBuf.rewind();
             tempFileChannel.write(mBuf, position);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException | NullPointerException e) {
             e.printStackTrace();
             return false;
         }
@@ -246,7 +244,9 @@ public class HexEditor {
     /**
      * Inserts bytes to the offset position without replacement. The
      * data after the inserted block is shifted towards large
-     * addresses.
+     * addresses. If the <code>offset</code> is bigger than file size
+     * fills <code>(offset - fileSize)</code> positions with zeros
+     * starting from the <code>(offset + 1)</code>.
      *
      * @param offset     the file position at which the adding is to
      *                   begin
@@ -292,7 +292,7 @@ public class HexEditor {
                 targetChannel.position(0L);
                 sourceChannel.transferFrom(targetChannel, newOffset,
                         (fileSize - offset));
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | NullPointerException e) {
                 e.printStackTrace();
                 return false;
             }
@@ -308,7 +308,9 @@ public class HexEditor {
 
     /**
      * Deletes a block of bytes with a data shift after the cut block
-     * towards smaller addresses.
+     * towards smaller addresses. If <code>(offset + count)</code> more
+     * than file size then deletes all bytes from the <code>offset</code>
+     * to the end of the file.
      *
      * @param offset the file position at which the deleting is to begin
      * @param count  deleted byte count
@@ -327,6 +329,9 @@ public class HexEditor {
 
                 long fileSize = r.length();
                 long newOffset;
+
+                if (offset + count > fileSize)
+                    count = fileSize - offset;
 
                 sourceChannel.transferTo(offset + count,
                         (fileSize - offset - count), targetChannel);

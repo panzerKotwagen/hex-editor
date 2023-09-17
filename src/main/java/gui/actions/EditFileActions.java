@@ -84,6 +84,10 @@ public class EditFileActions {
         @Override
         public void actionPerformed(ActionEvent e) {
             String comStr = e.getActionCommand();
+            updateSelection();
+
+            if (offset < 0 || count < 0)
+                return;
 
             switch (comStr) {
                 case "Cut":
@@ -220,11 +224,20 @@ public class EditFileActions {
     }
 
     /**
+     * Copies the selected byte block to the buffer.
+     */
+    private static boolean copy() {
+        if (count >= maxBufferSize)
+            return false;
+
+        byteBuffer = hexEditor.read(offset, count);
+        return byteBuffer != null;
+    }
+
+    /**
      * Cuts the selected byte block to the buffer.
      */
     private static void cut() {
-        //TODO: When empty cell is selected
-        updateSelection();
         if (copy()) {
             hexEditor.delete(offset, count);
             tableModel.updateModel();
@@ -232,24 +245,13 @@ public class EditFileActions {
     }
 
     /**
-     * Copies the selected byte block to the buffer.
-     */
-    private static boolean copy() {
-        //TODO: When empty cell is selected
-        updateSelection();
-        if (count >= maxBufferSize)
-            return false;
-        byteBuffer = hexEditor.read(offset, count);
-        return true;
-    }
-
-    /**
      * Pastes the byte block from the buffer starting from the
      * selected cell with replacement.
      */
     private static void paste() {
-        //TODO: When empty cell is selected
-        updateSelection();
+        if (byteBuffer == null || byteBuffer.length == 0)
+            return;
+
         hexEditor.insert(offset, byteBuffer);
         tableModel.updateModel();
     }
@@ -259,7 +261,6 @@ public class EditFileActions {
      * selected position with the replacement.
      */
     private static void insert() {
-        updateSelection();
         InputDialogWindow win = new InputDialogWindow(frame, "Insert");
         byte[] bytes = win.getData();
 
@@ -275,7 +276,6 @@ public class EditFileActions {
      * selected position with the rest offset to the right.
      */
     private static void add() {
-        updateSelection();
         InputDialogWindow win = new InputDialogWindow(frame, "Add");
         byte[] bytes = win.getData();
 
@@ -290,7 +290,6 @@ public class EditFileActions {
      * Replaces selection with zeros.
      */
     private static void resetToZero() {
-        updateSelection();
         hexEditor.insertZeros(count, offset);
         tableModel.updateModel();
     }
