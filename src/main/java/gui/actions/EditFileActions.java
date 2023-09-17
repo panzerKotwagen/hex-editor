@@ -8,10 +8,7 @@ import gui.window.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 /**
  * The class that provides file editing operations (cut, copy, paste, etc.)
@@ -19,6 +16,10 @@ import java.awt.event.KeyEvent;
  * for use them by menu and toolbar buttons.
  */
 public class EditFileActions {
+    /**
+     * The maximum size of the buffer.
+     */
+    private static final int maxBufferSize = 1024 * 1024 * 1024;
     public static EditFileAction cutAct;
     public static EditFileAction copyAct;
     public static EditFileAction pasteAct;
@@ -26,33 +27,23 @@ public class EditFileActions {
     public static EditFileAction insertAct;
     public static EditFileAction findAct;
     public static EditFileAction zeroAct;
-
     /**
      * The main application window.
      */
     private static MainWindow frame;
-
     /**
      * The table in which file data is displayed.
      */
     private static HexTable hexTable;
-
     /**
      * The table model of the HexTable.
      */
     private static HexTableModel tableModel;
-
     /**
      * The buffer in which bytes are saved after cut and copy
      * operations.
      */
     private static byte[] byteBuffer;
-
-    /**
-     * The maximum size of the buffer.
-     */
-    private static final int maxBufferSize = 1024 * 1024 * 1024;
-
     /**
      * The file to edit.
      */
@@ -69,50 +60,10 @@ public class EditFileActions {
     private static int count;
 
     /**
-     * The class describes Action performing file edit operations.
+     * Constructs the EditFileAction objects.
      */
-    public static class EditFileAction extends AbstractAction {
-        public EditFileAction(String name, int mnemonicKey,
-                              int accel, String tTip) {
-            super(name);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_MASK));
-            putValue(MNEMONIC_KEY, mnemonicKey);
-            putValue(SHORT_DESCRIPTION, tTip);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String comStr = e.getActionCommand();
-            updateSelection();
-
-            if (offset < 0 || count < 0)
-                return;
-
-            switch (comStr) {
-                case "Cut":
-                    cut();
-                    break;
-                case "Copy":
-                    copy();
-                    break;
-                case "Paste":
-                    paste();
-                    break;
-                case "Insert":
-                    insert();
-                    break;
-                case "Add":
-                    add();
-                    break;
-                case "Find":
-                    find();
-                    break;
-                case "Zero":
-                    resetToZero();
-                    break;
-            }
-        }
+    public EditFileActions() {
+        makeEditFileActions();
     }
 
     /**
@@ -173,22 +124,16 @@ public class EditFileActions {
     }
 
     /**
-     * Constructs the EditFileAction objects.
-     */
-    public EditFileActions() {
-        makeEditFileActions();
-    }
-
-    /**
      * Initializes the static variables.
      *
-     * @param hexTable  the table with file data
+     * @param hexTable   the table with file data
      * @param tableModel the model of the table
      * @param hex        the file to edit
      * @param win        the main application window
      */
     public static void init(HexTable hexTable, HexTableModel tableModel, HexEditor hex, MainWindow win) {
         EditFileActions.hexTable = hexTable;
+        hexTable.addKeyListener(new CellInput());
         EditFileActions.tableModel = tableModel;
         EditFileActions.hexEditor = hex;
         EditFileActions.frame = win;
@@ -335,34 +280,91 @@ public class EditFileActions {
     }
 
     /**
+     * The class describes Action performing file edit operations.
+     */
+    public static class EditFileAction extends AbstractAction {
+        public EditFileAction(String name, int mnemonicKey,
+                              int accel, String tTip) {
+            super(name);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
+                    InputEvent.CTRL_MASK));
+            putValue(MNEMONIC_KEY, mnemonicKey);
+            putValue(SHORT_DESCRIPTION, tTip);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String comStr = e.getActionCommand();
+            updateSelection();
+
+            if (offset < 0 || count < 0)
+                return;
+
+            switch (comStr) {
+                case "Cut":
+                    cut();
+                    break;
+                case "Copy":
+                    copy();
+                    break;
+                case "Paste":
+                    paste();
+                    break;
+                case "Insert":
+                    insert();
+                    break;
+                case "Add":
+                    add();
+                    break;
+                case "Find":
+                    find();
+                    break;
+                case "Zero":
+                    resetToZero();
+                    break;
+            }
+        }
+    }
+
+    /**
      * The class that provides filling in the table cell using a
      * keyboard.
      */
-    public static class CallInput extends KeyAdapter {
-        //TODO: Add comments
+    public static class CellInput extends KeyAdapter {
 
         /**
          * The number that is written to cell.
          */
         private final StringBuilder num = new StringBuilder();
 
-        private int prevOffset;
-        private int currOffset;
+        /**
+         * The byte offset which corresponds to the anchor selected cell.
+         */
+        private int offset = -1;
+
+        public CellInput() {
+            hexTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    num.delete(0, num.length());
+
+                    offset = tableModel.getIndex(
+                            hexTable.selectedRowIndexEnd,
+                            hexTable.selectedColIndexEnd);
+                }
+            });
+        }
 
         @Override
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
 
-            // if user is using hotkeys
-            if (e.isControlDown() || e.isAltDown())
-                return;
+            if ((offset != -1) && ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
+                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)
+                    || KeyEvent.VK_NUMPAD0 <= keyCode && keyCode <= KeyEvent.VK_NUMPAD9)) {
 
-            if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
-                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
-                currOffset = tableModel.getIndex(
-                        hexTable.selectedRowIndexEnd, hexTable.selectedColIndexEnd);
                 byte b = getNum(e.getKeyChar());
-                hexEditor.insert(prevOffset, b);
+                hexEditor.insert(offset, b);
                 tableModel.updateModel();
             }
         }
@@ -374,12 +376,6 @@ public class EditFileActions {
          * @return byte value
          */
         private byte getNum(char c) {
-            // If another cell was selected
-            if (prevOffset != currOffset && currOffset > 0) {
-                num.delete(0, num.length());
-                prevOffset = currOffset;
-            }
-
             if (num.length() > 2) {
                 num.delete(0, 1);
             }

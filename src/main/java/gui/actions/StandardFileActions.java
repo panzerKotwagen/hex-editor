@@ -1,7 +1,6 @@
 package gui.actions;
 
 import editor.HexEditor;
-import gui.actions.EditFileActions.CallInput;
 import gui.tables.HexTable;
 import gui.tables.HexTableModel;
 import gui.window.MainWindow;
@@ -192,8 +191,6 @@ public class StandardFileActions {
                 frame.decodePanel.fillPane(table.getByteSequence());
             }
         });
-
-        table.addKeyListener(new CallInput());
 
         EditFileActions.init(
                 table,
