@@ -16,10 +16,6 @@ import java.awt.event.*;
  * for use them by menu and toolbar buttons.
  */
 public class EditFileActions {
-    /**
-     * The maximum size of the buffer.
-     */
-    private static final int maxBufferSize = 1024 * 1024 * 1024;
     public static EditFileAction cutAct;
     public static EditFileAction copyAct;
     public static EditFileAction pasteAct;
@@ -27,23 +23,33 @@ public class EditFileActions {
     public static EditFileAction insertAct;
     public static EditFileAction findAct;
     public static EditFileAction zeroAct;
+
     /**
      * The main application window.
      */
     private static MainWindow frame;
+
     /**
      * The table in which file data is displayed.
      */
     private static HexTable hexTable;
+
     /**
      * The table model of the HexTable.
      */
     private static HexTableModel tableModel;
+
+    /**
+     * The maximum size of the buffer.
+     */
+    private static final int maxBufferSize = 1024 * 1024 * 1024;
+
     /**
      * The buffer in which bytes are saved after cut and copy
      * operations.
      */
     private static byte[] byteBuffer;
+
     /**
      * The file to edit.
      */
@@ -245,14 +251,13 @@ public class EditFileActions {
      * message that the specified sequence has not been found.
      */
     private static void find() {
-        //TODO: find starting from current pos
         InputDialogWindow win = new InputDialogWindow(frame, "Find");
         byte[] bytes = win.getData();
 
         if (bytes == null || bytes.length == 0)
             return;
 
-        long res = hexEditor.find(0, bytes);
+        long res = hexEditor.find(offset, bytes);
 
         if (res == -1) {
             JOptionPane.showMessageDialog(
@@ -263,10 +268,29 @@ public class EditFileActions {
         int col = (int) (res % (tableModel.getColumnCount() - 1)) + 1;
         int row = (int) (res / (tableModel.getColumnCount() - 1));
 
+        highlightCell(row, col);
+        scrollToCell(row, col);
+
+        frame.updateFrame();
+    }
+
+    /**
+     * Selects the specified cell.
+     * @param row row index
+     * @param col column index
+     */
+    private static void highlightCell(int row, int col) {
         // Select the found cell
         hexTable.getSelectionModel().addSelectionInterval(row, row);
         hexTable.getColumnModel().getSelectionModel().setSelectionInterval(col, col);
+    }
 
+    /**
+     * Scrolls window to specified cell.
+     * @param row row index
+     * @param col column index
+     */
+    private static void scrollToCell(int row, int col) {
         // Move vertical scroll bar to the match cell
         Adjustable e = frame.fileViewPanel.getVerticalScrollBar();
         // One line corresponds to the 40 value of the scrollbar
@@ -275,8 +299,6 @@ public class EditFileActions {
         // Move horizontal scroll bar to the match cell
         e = frame.fileViewPanel.getHorizontalScrollBar();
         e.setValue(col * 40);
-
-        frame.updateFrame();
     }
 
     /**

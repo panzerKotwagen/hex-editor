@@ -118,7 +118,7 @@ public class StandardFileActions {
         saveAsNewAct.putValue(
                 StandardFileAction.ACCELERATOR_KEY,
                 KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                InputEvent.SHIFT_DOWN_MASK + InputEvent.CTRL_DOWN_MASK));
+                        InputEvent.SHIFT_DOWN_MASK + InputEvent.CTRL_DOWN_MASK));
 
         // The actions are not available until a file is opened
         unblockFileButtons();
@@ -154,6 +154,27 @@ public class StandardFileActions {
     }
 
     /**
+     * Launches the file manager window to open an existing file. If
+     * a file was not chosen returns null otherwise returns path to
+     * the file in String format.
+     *
+     * @return path to the file or null
+     */
+    private static String maybeOpen() {
+        FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
+        fd.setDirectory("C:\\");
+        fd.setVisible(true);
+
+        String dir = fd.getDirectory();
+        String filename = fd.getFile();
+
+        if (filename == null)
+            return null;
+        else
+            return dir + filename;
+    }
+
+    /**
      * Launches the file manager window to open an existing file.
      * If the file has been selected creates the table and displays
      * it on the screen.
@@ -163,24 +184,28 @@ public class StandardFileActions {
             return;
         }
 
-        FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
-        fd.setDirectory("C:\\");
-        fd.setVisible(true);
+        String path = maybeOpen();
 
-        String dir = fd.getDirectory();
-        String filename = fd.getFile();
-
-        if (filename == null)
+        if (path == null)
             return;
 
         if (fileIsOpened)
             hexEditor.closeFile();
 
-        hexEditor.openFile(dir + filename);
+        hexEditor.openFile(path);
 
         fileIsOpened = true;
         unblockFileButtons();
 
+        createTable();
+
+        frame.updateFrame();
+    }
+
+    /**
+     * Makes the table and all the listeners for it.
+     */
+    private static void createTable() {
         HexTable table = HexTable.createTable(hexEditor);
 
         table.updateTableView(frame.getBounds().width);
@@ -208,8 +233,6 @@ public class StandardFileActions {
         });
 
         frame.fileViewPanel.setViewportView(table);
-
-        frame.updateFrame();
     }
 
     /**
