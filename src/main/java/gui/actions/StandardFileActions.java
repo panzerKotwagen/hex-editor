@@ -56,7 +56,7 @@ public class StandardFileActions {
                                   int accel, String tTip) {
             super(name);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accel,
-                    InputEvent.CTRL_MASK));
+                    InputEvent.CTRL_DOWN_MASK));
             putValue(MNEMONIC_KEY, mnemonicKey);
             putValue(SHORT_DESCRIPTION, tTip);
         }

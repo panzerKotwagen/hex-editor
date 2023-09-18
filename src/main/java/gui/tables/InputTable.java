@@ -18,14 +18,15 @@ public class InputTable extends JTable {
      */
     public InputTable() {
         super();
-        this.setModel(new InputTableModel());
+        InputTableModel model = new InputTableModel();
+        this.setModel(model);
         this.setRowHeight(40);
         this.setIntercellSpacing(new Dimension(10, 10));
         this.setShowGrid(true);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.setCellSelectionEnabled(false);
         HexTable.setColumnsWidth(this, 50);
-        this.addKeyListener(new TableKeyboardInput(this));
+        this.addKeyListener(new TableKeyboardInput(model));
         getTableHeader().setReorderingAllowed(false);
     }
 
@@ -50,7 +51,9 @@ public class InputTable extends JTable {
      */
     private static class InputTableModel extends AbstractTableModel {
 
-        static public final int MAX_DATA_SIZE = 32;
+        static public final int ROW_COUNT = 4;
+        static public final int COL_COUNT = 8;
+        static public final int MAX_DATA_SIZE = ROW_COUNT * COL_COUNT;
 
         /**
          * The list to store inputted bytes.
@@ -62,7 +65,7 @@ public class InputTable extends JTable {
          */
         @Override
         public int getRowCount() {
-            return 4;
+            return ROW_COUNT;
         }
 
         /**
@@ -70,7 +73,7 @@ public class InputTable extends JTable {
          */
         @Override
         public int getColumnCount() {
-            return 8;
+            return COL_COUNT;
         }
 
         /**
@@ -114,19 +117,17 @@ public class InputTable extends JTable {
         }
 
         /**
-         * Adds the new Byte value to the list or replace an old at
-         * the same position.
+         * Add the byte to model.
+         * @param index data array index
+         * @param value byte value
          */
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            int idx = getIndex(rowIndex, columnIndex);
-            if (data.size() < idx + 1)
-                if (data.size() < MAX_DATA_SIZE)
-                    data.add(idx, (Byte) aValue);
-                else
-                    return;
-            else
-                data.set(idx, (Byte) aValue);
+        public void add(int index, Byte value) {
+            try {
+                data.set(index, value);
+            }
+            catch (IndexOutOfBoundsException e) {
+                data.add(value);
+            }
             fireTableDataChanged();
         }
 
@@ -147,25 +148,26 @@ public class InputTable extends JTable {
     private static class TableKeyboardInput extends KeyAdapter {
 
         /**
-         * The number that is written to cell.
+         * The number in hex format that is written to cell.
          */
         private final StringBuilder num = new StringBuilder();
 
         /**
-         * The InputTable to edit.
+         * The InputTableModel to edit.
          */
-        InputTable table;
+        InputTableModel model;
 
         /**
-         * The cell position in which the number to be written.
+         * The number of recorded numbers. A number is considered
+         * written if two digits have been entered.
          */
-        private int offset = 0;
+        private int count = 0;
 
         /**
          * Sets the table to edit.
          */
-        public TableKeyboardInput(InputTable table) {
-            this.table = table;
+        public TableKeyboardInput(InputTableModel model) {
+            this.model = model;
         }
 
         @Override
@@ -175,9 +177,10 @@ public class InputTable extends JTable {
             if (keyCode == KeyEvent.VK_BACK_SPACE) {
                 delete();
             } else if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
-                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)) {
+                    || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)
+                    || KeyEvent.VK_NUMPAD0 <= keyCode && keyCode <= KeyEvent.VK_NUMPAD9) {
 
-                if (offset < InputTableModel.MAX_DATA_SIZE)
+                if (count < InputTableModel.MAX_DATA_SIZE)
                     append(e.getKeyChar());
             }
         }
@@ -185,35 +188,31 @@ public class InputTable extends JTable {
         /**
          * Adds a number to the current cell. Two digits in hexadecimal
          * format are entered into each cell. When two numbers are
-         * entered offset starts to indicate the following.
+         * entered <code>count</code> is incremented.
          *
          * @param insertedChar char of the key that was pressed. It
          *                     is represented a number in hex format.
          */
         private void append(char insertedChar) {
             num.append(insertedChar);
-
             byte b = (byte) Long.parseLong(num.toString(), 16);
-
-            table.setValueAt(b,
-                    offset / table.getColumnCount(),
-                    offset % table.getColumnCount());
+            model.add(count, b);
 
             if (num.length() == 2) {
+                count += 1;
                 num.delete(0, 2);
-                offset += 1;
             }
         }
 
         /**
-         * Erases the current cell.
+         * Erases the current cell. Decrements the <code>count</code>.
          */
         private void delete() {
-            if (offset > 0) {
-                ((InputTableModel) table.getModel()).pop();
+            if (!model.data.isEmpty()) {
+                model.pop();
 
                 if (num.length() == 0)
-                    offset -= 1;
+                    count -= 1;
 
                 num.delete(0, 2);
             }
