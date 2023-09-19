@@ -41,7 +41,8 @@ public class HexTable extends JTable {
     public int selectedColIndexEnd;
 
     /**
-     * The HexTableModel of the table.
+     * The {@code HexTableModel} that provides the data displayed
+     * by this {@code HexTable}.
      */
     private final HexTableModel tableModel;
 
@@ -86,12 +87,27 @@ public class HexTable extends JTable {
     }
 
     /**
-     * Sets preferred width for every column in the given table.
+     * Overridden to forbid the multiple selection when pressing ctrl
+     * and selection the offset column.
      */
-    public static void setColumnsWidth(JTable table, int width) {
-        for (int i = 1; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(width);
-        }
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex,
+                                boolean toggle, boolean extend) {
+        if (columnIndex == 0)
+            return;
+        super.changeSelection(rowIndex, columnIndex, false, extend);
+    }
+
+    /**
+     * Returns the {@code HexTableModel} that provides the data
+     * displayed by this {@code HexTable}.
+     *
+     * @return the {@code HexTableModel} that provides the data
+     * displayed by this {@code HexTable}
+     */
+    @Override
+    public HexTableModel getModel() {
+        return (HexTableModel) super.getModel();
     }
 
     /**
@@ -101,6 +117,24 @@ public class HexTable extends JTable {
         HexTableModel model = new HexTableModel(16);
         model.setDataSource(dataSource);
         return new HexTable(model);
+    }
+
+    /**
+     * Sets preferred width for every column in the given table.
+     */
+    public static void setColumnsWidth(JTable table, int width) {
+        for (int i = 1; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(width);
+        }
+    }
+
+    /**
+     * Sets the specified column width for instance of the HexTable.
+     */
+    public void setColumnsWidth() {
+        setColumnsWidth(this, BYTE_COLUMN_WIDTH);
+        this.getColumnModel().getColumn(0).setPreferredWidth(
+                OFFSET_COLUMN_WIDTH);
     }
 
     /**
@@ -129,15 +163,6 @@ public class HexTable extends JTable {
     }
 
     /**
-     * Sets the specified column width for instance of the HexTable.
-     */
-    public void setColumnsWidth() {
-        setColumnsWidth(this, BYTE_COLUMN_WIDTH);
-        this.getColumnModel().getColumn(0).setPreferredWidth(
-                OFFSET_COLUMN_WIDTH);
-    }
-
-    /**
      * Updates selected cell indexes.
      */
     public void updateSelectionIndexes() {
@@ -147,28 +172,6 @@ public class HexTable extends JTable {
                 .getAnchorSelectionIndex();
         selectedColIndexEnd = getColumnModel().getSelectionModel()
                 .getLeadSelectionIndex();
-    }
-
-    /**
-     * Returns the ByteSequence of length 8 which filling with the
-     * bytes from the cells starting from the lead selected cell.
-     * If there are no enough cells to the right of the lead selected
-     * cell then returns sequence of less length.
-     */
-    public ByteSequence getByteSequence() {
-        return tableModel.getByteSequence(getEndOffset());
-    }
-
-    /**
-     * Overridden to forbid the multiple selection when pressing ctrl
-     * and selection the offset column.
-     */
-    @Override
-    public void changeSelection(int rowIndex, int columnIndex,
-                                boolean toggle, boolean extend) {
-        if (columnIndex == 0)
-            return;
-        super.changeSelection(rowIndex, columnIndex, false, extend);
     }
 
     /**
@@ -185,6 +188,16 @@ public class HexTable extends JTable {
      */
     public int getEndOffset() {
         return tableModel.getOffset(selectedRowIndexEnd, selectedColIndexEnd);
+    }
+
+    /**
+     * Returns the ByteSequence of length 8 which filling with the
+     * bytes from the cells starting from the lead selected cell.
+     * If there are no enough cells to the right of the lead selected
+     * cell then returns sequence of less length.
+     */
+    public ByteSequence getByteSequence() {
+        return tableModel.getByteSequence(getEndOffset());
     }
 }
 

@@ -1,5 +1,7 @@
 package editor;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -231,13 +233,8 @@ public class ByteSequence {
      */
     private byte[] getInBigEndianOrder(int byteCount) {
         byte[] reverse = new byte[byteCount];
-
-        for (int i = 0; i <= byteCount / 2; i++) {
-            byte temp = getByte(+ i);
-            reverse[i] = getByte(byteCount - i - 1);
-            reverse[byteCount - i - 1] = temp;
-        }
-
+        System.arraycopy(byteSequence, 0, reverse, 0, byteCount);
+        ArrayUtils.reverse(reverse);
         return reverse;
     }
 

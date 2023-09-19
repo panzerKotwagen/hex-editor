@@ -2,7 +2,6 @@ package gui.actions;
 
 import editor.HexEditor;
 import gui.tables.HexTable;
-import gui.tables.HexTableModel;
 import gui.window.MainWindow;
 
 import javax.swing.AbstractAction;
@@ -230,11 +229,7 @@ public class StandardFileActions {
             }
         });
 
-        EditFileActions.init(
-                table,
-                (HexTableModel) table.getModel(),
-                hexEditor,
-                frame);
+        EditFileActions.init(table, hexEditor, frame);
 
         // Monitors the window resizing events for the table redrawing
         frame.addComponentListener(new ComponentAdapter() {

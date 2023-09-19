@@ -1,5 +1,7 @@
 package editor;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -272,14 +274,11 @@ public class HexEditor {
                             targetChannel);
                 }
                 catch (IllegalArgumentException e) {
+
                     // If the insert offset is bigger than file size
                     // fill (offset - fileSize) positions with zeros.
                     int zeroCount = (int) (offset - fileSize);
-                    byte[] result = new byte[zeroCount + addedBytes.length];
-                    System.arraycopy(addedBytes, 0, result, zeroCount, addedBytes.length);
-
-                    addedBytes = result;
-
+                    addedBytes = ArrayUtils.addAll(new byte[zeroCount], addedBytes);
                     offset = fileSize;
                 }
 

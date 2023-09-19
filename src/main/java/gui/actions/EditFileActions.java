@@ -138,15 +138,13 @@ public class EditFileActions {
      * Initializes the static variables.
      *
      * @param hexTable   the table with file data
-     * @param tableModel the model of the table
      * @param hex        the file to edit
      * @param win        the main application window
      */
-    public static void init(HexTable hexTable, HexTableModel tableModel,
-                            HexEditor hex, MainWindow win) {
+    public static void init(HexTable hexTable, HexEditor hex, MainWindow win) {
         EditFileActions.hexTable = hexTable;
         hexTable.addKeyListener(new CellInput());
-        EditFileActions.tableModel = tableModel;
+        EditFileActions.tableModel = hexTable.getModel();
         EditFileActions.hexEditor = hex;
         EditFileActions.frame = win;
     }

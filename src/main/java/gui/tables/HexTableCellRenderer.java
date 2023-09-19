@@ -23,7 +23,7 @@ public class HexTableCellRenderer extends DefaultTableCellRenderer {
                 table, obj, isSelected, hasFocus, row, column);
 
         HexTable hexTable = (HexTable) table;
-        HexTableModel tableModel = (HexTableModel) table.getModel();
+        HexTableModel tableModel = hexTable.getModel();
 
         int start = hexTable.getStartOffset();
         int end = hexTable.getEndOffset();

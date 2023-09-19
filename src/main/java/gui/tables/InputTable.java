@@ -1,7 +1,10 @@
 package gui.tables;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -17,17 +20,27 @@ public class InputTable extends JTable {
      * Constructs the table which can be used to writing bytes.
      */
     public InputTable() {
-        super();
-        InputTableModel model = new InputTableModel();
-        this.setModel(model);
+        super(new InputTableModel());
         this.setRowHeight(40);
         this.setIntercellSpacing(new Dimension(10, 10));
         this.setShowGrid(true);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.setCellSelectionEnabled(false);
         HexTable.setColumnsWidth(this, 50);
-        this.addKeyListener(new TableKeyboardInput(model));
+        this.addKeyListener(new TableKeyboardInput(this.getModel()));
         getTableHeader().setReorderingAllowed(false);
+    }
+
+    /**
+     * Returns the {@code InputTableModel} that provides the data
+     * displayed by this {@code InputTable}.
+     *
+     * @return the {@code InputTableModel} that provides the data
+     * displayed by this {@code InputTable}
+     */
+    @Override
+    public InputTableModel getModel() {
+        return (InputTableModel) super.getModel();
     }
 
     /**
@@ -35,15 +48,9 @@ public class InputTable extends JTable {
      * @return byte array
      */
     public byte[] getData() {
-        ArrayList<Byte> data =((InputTableModel) this.getModel()).data;
-
-        byte[] res = new byte[data.size()];
-
-        int j = 0;
-        for(Byte b: data)
-            res[j++] = b;
-
-        return res;
+        ArrayList<Byte> data = getModel().data;
+        Byte[] bytes = data.toArray(new Byte[data.size()]);
+        return ArrayUtils.toPrimitive(bytes);
     }
 
     /**
@@ -58,7 +65,7 @@ public class InputTable extends JTable {
         /**
          * The list to store inputted bytes.
          */
-        ArrayList<Byte> data = new ArrayList<>();
+        private ArrayList<Byte> data = new ArrayList<>();
 
         /**
          * Return fixed row count.
