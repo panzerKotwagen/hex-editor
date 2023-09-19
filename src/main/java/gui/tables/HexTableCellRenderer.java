@@ -13,55 +13,27 @@ import java.awt.*;
 public class HexTableCellRenderer extends DefaultTableCellRenderer {
 
     @Override
-    public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
-        Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
+    public Component getTableCellRendererComponent(
+            JTable table, Object obj,
+            boolean isSelected, boolean hasFocus,
+            int row, int column) {
 
-        HexTable fTable = (HexTable) table;
+        Component cell = super.getTableCellRendererComponent(
+                table, obj, isSelected, hasFocus, row, column);
 
-        // User selection direction: top-down or bottom-up
-        boolean down = fTable.selectedRowIndexEnd > fTable.selectedRowIndexStart;
+        HexTable hexTable = (HexTable) table;
+        HexTableModel tableModel = (HexTableModel) table.getModel();
 
-        // If more than one line is selected and selection direction
-        // is from top to bottom
-        if (down) {
-            // Select all the rows between the first and last
-            if (fTable.selectedRowIndexStart < row
-                    && row < fTable.selectedRowIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            // Select all the cells that are to the right of anchor cell
-            else if (row == fTable.selectedRowIndexStart
-                    && column >= fTable.selectedColIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            // Select all the cells that are to the left of lead cell
-            else if (row == fTable.selectedRowIndexEnd
-                    && column <= fTable.selectedColIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            else
-                cell.setBackground(new Color(0xFFFFFF));
+        int start = hexTable.getStartOffset();
+        int end = hexTable.getEndOffset();
+        int cellOffset = tableModel.getOffset(row, column);
 
-        // If more than one line is selected and selection direction
-        // is from bottom to top
-        } else if (fTable.selectedRowIndexStart != fTable.selectedRowIndexEnd) {
-            // Select all the rows between the first and last
-            if (fTable.selectedRowIndexEnd < row
-                    && row < fTable.selectedRowIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            // Select all the cells that are to the left of anchor cell
-            else if (row == fTable.selectedRowIndexStart
-                    && column <= fTable.selectedColIndexStart)
-                cell.setBackground(new Color(0xA2DEEB));
-            // Select all the cells that are to the right of lead cell
-            else if (row == fTable.selectedRowIndexEnd
-                    && column >= fTable.selectedColIndexEnd)
-                cell.setBackground(new Color(0xA2DEEB));
-            else
-                cell.setBackground(new Color(0xFFFFFF));
-
-        // If only one line is selected
-        } else if (isSelected) {
+        if (cellOffset >= Math.min(start, end)
+                && cellOffset <= Math.max(start, end)) {
             cell.setBackground(new Color(0xA2DEEB));
-        } else
+        } else {
             cell.setBackground(new Color(0xFFFFFF));
+        }
 
         return cell;
     }
