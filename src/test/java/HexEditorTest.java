@@ -1,4 +1,6 @@
 import editor.HexEditor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -6,11 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HexEditorTest {
     HexEditor hexEditor = new HexEditor();
 
+    @AfterEach
+    void closeFile() {
+        hexEditor.closeFile();
+    }
+
     @Test
     void findInSmallFile() {
         hexEditor.openFile("src/test/resources/test1.txt");
         long res = hexEditor.find(0, new byte[]{54, 32, 55});
-        hexEditor.closeFile();
         assertEquals(6, res);
     }
 
@@ -18,7 +24,6 @@ public class HexEditorTest {
     void findInBigFile() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         long res = hexEditor.find(0, new byte[]{42, (byte) 246, (byte) 215, 108});
-        hexEditor.closeFile();
         assertEquals(10_193_044, res);
     }
 
@@ -26,7 +31,6 @@ public class HexEditorTest {
     void findAtTheBeginning() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         long res = hexEditor.find(0, new byte[]{73, 68});
-        hexEditor.closeFile();
         assertEquals(0, res);
     }
 
@@ -34,7 +38,6 @@ public class HexEditorTest {
     void findNonExistingBytes() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         long res = hexEditor.find(0, new byte[]{-42, (byte) 246, (byte) 215, -108});
-        hexEditor.closeFile();
         assertEquals(-1, res);
     }
 
@@ -42,7 +45,6 @@ public class HexEditorTest {
     void findNonExistingBytes2() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         long res = hexEditor.find(0, new byte[]{-114, 114, 49, 86});
-        hexEditor.closeFile();
         assertEquals(-1, res);
     }
 
@@ -51,7 +53,6 @@ public class HexEditorTest {
         hexEditor.openFile("src/test/resources/test2.mp3");
         byte[] mask = new byte[]{103, 46, (byte) 164, 105, (byte) 150, 14, (byte) 161, 94, (byte) 197, 28, (byte) 181, 93, 13, 74, 35, 16};
         long res = hexEditor.find(0, mask);
-        hexEditor.closeFile();
         assertEquals(9_852_816, res);
     }
 
@@ -60,21 +61,40 @@ public class HexEditorTest {
         hexEditor.openFile("src/test/resources/test2.mp3");
         byte[] mask = new byte[]{0, 0, (byte) 255};
         long res = hexEditor.find(10_000_000, mask);
-        hexEditor.closeFile();
         assertEquals(10_213_769, res);
+    }
+
+    @Test
+    void findFromNegativePosition() {
+        hexEditor.openFile("src/test/resources/test2.mp3");
+        long res = hexEditor.find(-500, new byte[]{73, 68});
+        assertEquals(-1, res);
+    }
+
+    @Test
+    void findVeryLongMask() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        byte[] mask = ArrayUtils.addAll(new byte[91_147_647], new byte[]{99});
+        hexEditor.add(10000, mask);
+        assertEquals(10000, hexEditor.find(0, mask));
+    }
+
+    @Test
+    void findStartingFromPositionBiggerThanFileSize() {
+        hexEditor.openFile("src/test/resources/test2.mp3");
+        byte[] mask = ArrayUtils.addAll(new byte[]{99});
+        assertEquals(-1, hexEditor.find(hexEditor.getFileSize() + 1, mask));
     }
 
     @Test
     void fileShouldNotOpenWhenAnotherFileOpened() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertFalse(hexEditor.openFile("src/test/resources/test2.mp3"));
-        hexEditor.closeFile();
     }
 
     @Test
     void openNonExistingFile() {
         assertFalse(hexEditor.openFile("src/test/resources/teASFast1.txt"));
-        hexEditor.closeFile();
     }
 
     @Test
@@ -82,57 +102,42 @@ public class HexEditorTest {
         hexEditor.openFile("src/test/resources/test2.mp3");
         byte[] readBytes = hexEditor.read(0, 8);
         assertArrayEquals(new byte[]{73, 68, 51, 3, 0, 0, 0, 19}, readBytes);
-        hexEditor.closeFile();
     }
 
     @Test
     void readMoreThenExist() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertArrayEquals(hexEditor.read(0, 11), hexEditor.read(0, 15));
-        hexEditor.closeFile();
     }
 
     @Test
     void readMoreThenExist2() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertNull(hexEditor.read(50, 1));
-        hexEditor.closeFile();
     }
 
     @Test
     void readFromNegativePosition() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         assertNull(hexEditor.read(-500, 1));
-        hexEditor.closeFile();
     }
 
     @Test
     void readNegativeByteCount() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         assertNull(hexEditor.read(0, -100));
-        hexEditor.closeFile();
-    }
-
-    @Test
-    void findFromNegativePosition() {
-        hexEditor.openFile("src/test/resources/test2.mp3");
-        long res = hexEditor.find(-500, new byte[]{73, 68});
-        hexEditor.closeFile();
-        assertEquals(-1, res);
     }
 
     @Test
     void readZeroBytes() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertArrayEquals(new byte[0], hexEditor.read(0, 0));
-        hexEditor.closeFile();
     }
 
     @Test
     void readTenMillionBytes() {
         hexEditor.openFile("src/test/resources/test2.mp3");
         assertEquals(10_000_000, hexEditor.read(213771, 10_000_000).length);
-        hexEditor.closeFile();
     }
 
     @Test
@@ -151,7 +156,34 @@ public class HexEditorTest {
         hexEditor.closeFile();
         hexEditor.openFile("src/test/resources/test3.txt");
         assertEquals(1, hexEditor.find(0, new byte[]{10, 15, -99}));
+    }
+
+    @Test
+    void insertBytesIntoNegativePosition() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        assertFalse(hexEditor.insert(-1, new byte[]{10, 15, -99}));
+    }
+
+    @Test
+    void insertBytesIntoPositionBiggerThanFileSize() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        hexEditor.insert(9000, new byte[]{10, 15, -99});
+        hexEditor.saveAsNewFile("src/test/resources/test3.txt");
         hexEditor.closeFile();
+        hexEditor.openFile("src/test/resources/test3.txt");
+        assertEquals(9000, hexEditor.find(9000, new byte[]{10, 15, -99}));
+        assertEquals(9003, hexEditor.getFileSize());
+    }
+
+    @Test
+    void insertMoreBytesThanFileSize() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        byte[] mask = ArrayUtils.addAll(new byte[91_147_647], new byte[]{99});
+        hexEditor.insert(9000, mask);
+        hexEditor.saveAsNewFile("src/test/resources/test3.txt");
+        hexEditor.closeFile();
+        hexEditor.openFile("src/test/resources/test3.txt");
+        assertEquals(9000, hexEditor.find(9000, mask));
     }
 
     @Test
@@ -163,7 +195,6 @@ public class HexEditorTest {
 
         hexEditor.openFile("src/test/resources/test3.txt");
         assertEquals(0, hexEditor.find(0, new byte[]{10, 15, -99, 49, 50}));
-        hexEditor.closeFile();
     }
 
     @Test
@@ -174,7 +205,6 @@ public class HexEditorTest {
         hexEditor.closeFile();
         hexEditor.openFile("src/test/resources/test3.txt");
         assertEquals(9, hexEditor.find(0, new byte[]{56, 10, 15, -99, 57}));
-        hexEditor.closeFile();
     }
 
     @Test
@@ -186,21 +216,19 @@ public class HexEditorTest {
 
         hexEditor.openFile("src/test/resources/test3.txt");
         assertEquals(9, hexEditor.find(9, new byte[]{56, 57, 10, 15, -99}));
-        hexEditor.closeFile();
     }
 
     @Test
     void addBytesIntoNegativePosition() {
         hexEditor.openFile("src/test/resources/test1.txt");
         assertFalse(hexEditor.add(-10, new byte[]{10, 15, -99}));
-        hexEditor.closeFile();
     }
 
     @Test
     void addBytesIntoPositionThatIsBiggerThanFileSize() {
         hexEditor.openFile("src/test/resources/test1.txt");
-        assertFalse(hexEditor.add(50, new byte[]{10, 15, -99}));
-        hexEditor.closeFile();
+        hexEditor.add(50, new byte[]{10, 15, -99});
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 10, 15, -99}, hexEditor.read(43, 50));
     }
 
     @Test
@@ -213,7 +241,6 @@ public class HexEditorTest {
         hexEditor.openFile("src/test/resources/test3.txt");
         byte[] readBytes = hexEditor.read(0, 10);
         assertEquals(0, hexEditor.find(0, readBytes));
-        hexEditor.closeFile();
     }
 
     @Test
@@ -225,6 +252,38 @@ public class HexEditorTest {
 
         hexEditor.openFile("src/test/resources/test3.txt");
         assertEquals(0, hexEditor.find(0, new byte[100]));
-        hexEditor.closeFile();
+    }
+
+    @Test
+    void deleteAllFile() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        hexEditor.delete(0, hexEditor.getFileSize());
+        assertEquals(0, hexEditor.getFileSize());
+    }
+
+    @Test
+    void deleteAtNegativePosition() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        assertFalse(hexEditor.delete(-1, hexEditor.getFileSize()));
+    }
+
+    @Test
+    void deleteMoreThanExists() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        hexEditor.delete(2, hexEditor.getFileSize() * 999);
+        assertEquals(2, hexEditor.getFileSize());
+    }
+
+    @Test
+    void deleteWhenFileIsNotOpened() {
+        assertThrows(NullPointerException.class,
+                () -> hexEditor.delete(0, 0));
+    }
+
+    @Test
+    void deleteZeroBytes() {
+        hexEditor.openFile("src/test/resources/test1.txt");
+        hexEditor.delete(0, 0);
+        assertEquals(11, hexEditor.getFileSize());
     }
 }

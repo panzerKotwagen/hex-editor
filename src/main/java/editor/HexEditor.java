@@ -148,6 +148,8 @@ public class HexEditor {
                 buffer.get(readBytes, readBytes.length - count, buffer.limit());
 
                 count -= buffer.limit();
+                if (offset > 1040000)
+                    System.out.println();
                 offset += buffer.limit();
 
                 buffer.clear();
@@ -222,10 +224,10 @@ public class HexEditor {
      */
     public long find(long offset, byte... mask) {
         byte[] readBytes;
-        int bufferSize = 1024 * 1024;
+        final int BUFFER_SIZE = Math.max(mask.length * 2, 1024 * 1024);
         int res = -1;
 
-        while ((readBytes = read(offset, bufferSize)) != null) {
+        while ((readBytes = read(offset, BUFFER_SIZE)) != null) {
             try {
                 res = ByteSequence.find(mask, readBytes);
             } catch (NullPointerException e) {
@@ -237,7 +239,7 @@ public class HexEditor {
             // The mask length is subtracted to consider the case
             // when the required sequence is divided between two
             // buffers
-            offset += bufferSize - mask.length;
+            offset += BUFFER_SIZE - mask.length;
         }
 
         return res;
@@ -274,6 +276,9 @@ public class HexEditor {
                             targetChannel);
                 }
                 catch (IllegalArgumentException e) {
+                    if (offset < 0) {
+                        return false;
+                    }
 
                     // If the insert offset is bigger than file size
                     // fill (offset - fileSize) positions with zeros.
