@@ -34,7 +34,8 @@ public class ByteRepresentPanel extends JPanel {
      */
     public ByteRepresentPanel() {
         super(new MigLayout("wrap 4"));
-        this.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        this.setBorder(BorderFactory.createEmptyBorder(
+                10, 20, 10, 20));
         makeByteRepresentPanel();
     }
 

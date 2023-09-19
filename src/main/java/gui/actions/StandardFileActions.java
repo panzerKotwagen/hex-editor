@@ -42,15 +42,18 @@ public class StandardFileActions {
      */
     private static MainWindow frame;
 
+    static {
+        makeActions();
+    }
+
     /**
-     * Initializes the static variables and constructs the actions.
+     * Initializes the static variables.
      *
      * @param frame main application window
      */
-    public StandardFileActions(MainWindow frame) {
+    public static void init(MainWindow frame) {
         StandardFileActions.frame = frame;
         StandardFileActions.hexEditor = new HexEditor();
-        makeActions();
     }
 
     /**
@@ -123,8 +126,7 @@ public class StandardFileActions {
 
         saveAsNewAct.putValue(
                 StandardFileAction.ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(
-                        KeyEvent.VK_S,
+                KeyStroke.getKeyStroke(KeyEvent.VK_S,
                         InputEvent.SHIFT_DOWN_MASK
                                 + InputEvent.CTRL_DOWN_MASK));
 
@@ -169,7 +171,8 @@ public class StandardFileActions {
      * @return path to the file or null
      */
     private static String maybeOpen() {
-        FileDialog fd = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
+        FileDialog fd = new FileDialog(
+                frame, "Choose a file", FileDialog.LOAD);
         fd.setDirectory("C:\\");
         fd.setVisible(true);
 
@@ -276,7 +279,8 @@ public class StandardFileActions {
         if (!fileIsOpened)
             return;
 
-        FileDialog fd = new FileDialog(frame, "Save the file", FileDialog.SAVE);
+        FileDialog fd = new FileDialog(
+                frame, "Save the file", FileDialog.SAVE);
         fd.setVisible(true);
 
         String dir = fd.getDirectory();

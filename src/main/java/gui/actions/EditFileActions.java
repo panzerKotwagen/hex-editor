@@ -73,17 +73,14 @@ public class EditFileActions {
      */
     private static int count;
 
-    /**
-     * Constructs the EditFileAction objects.
-     */
-    public EditFileActions() {
-        makeEditFileActions();
+    static {
+        makeActions();
     }
 
     /**
      * Creates static instances for using them by buttons.
      */
-    private static void makeEditFileActions() {
+    public static void makeActions() {
         cutAct = new EditFileAction(
                 "Cut",
                 KeyEvent.VK_X,

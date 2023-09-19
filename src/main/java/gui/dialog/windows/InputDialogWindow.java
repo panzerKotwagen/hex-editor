@@ -65,7 +65,8 @@ public class InputDialogWindow extends JDialog {
     public InputDialogWindow(JFrame owner, String name) {
         super(owner, name, true);
 
-        MainWindow.setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 18));
+        MainWindow.setUIFont(new javax.swing.plaf.FontUIResource(
+                "Arial", Font.PLAIN, 18));
 
         this.setMinimumSize(new Dimension(420, 350));
 
@@ -107,7 +108,8 @@ public class InputDialogWindow extends JDialog {
      */
     private void makeButtonPanel() {
         panelButtons = new JPanel(new FlowLayout());
-        panelButtons.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelButtons.setBorder(BorderFactory.createEmptyBorder(
+                10, 10, 10, 10));
 
         btnDo = new JButton("Do");
         btnCancel = new JButton("Cancel");
@@ -131,7 +133,8 @@ public class InputDialogWindow extends JDialog {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         panelTable = new JScrollPane(table);
-        panelTable.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        panelTable.setBorder(BorderFactory.createEmptyBorder(
+                10, 0, 0, 0));
 
         table.addKeyListener(new KeyAdapter() {
             @Override

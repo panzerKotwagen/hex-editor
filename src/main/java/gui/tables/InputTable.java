@@ -85,7 +85,8 @@ public class InputTable extends JTable {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             try {
-                return String.format("%02X", data.get(getIndex(rowIndex, columnIndex)));
+                return String.format(
+                        "%02X", data.get(getIndex(rowIndex, columnIndex)));
             } catch (IndexOutOfBoundsException e) {
                 return "...";
             }
@@ -178,7 +179,8 @@ public class InputTable extends JTable {
                 delete();
             } else if ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
                     || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)
-                    || KeyEvent.VK_NUMPAD0 <= keyCode && keyCode <= KeyEvent.VK_NUMPAD9) {
+                    || KeyEvent.VK_NUMPAD0 <= keyCode
+                    && keyCode <= KeyEvent.VK_NUMPAD9) {
 
                 if (count < InputTableModel.MAX_DATA_SIZE)
                     append(e.getKeyChar());

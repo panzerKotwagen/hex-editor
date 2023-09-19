@@ -1,6 +1,5 @@
 package gui.window;
 
-import gui.actions.EditFileActions;
 import gui.actions.StandardFileActions;
 
 import javax.swing.JFrame;
@@ -35,15 +34,15 @@ public class MainWindow extends JFrame {
      */
     MainWindow() {
         super("Hex editor");
-        setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 18));
+        setUIFont(new javax.swing.plaf.FontUIResource(
+                "Arial", Font.PLAIN, 18));
 
         this.setMinimumSize(new Dimension(650, 600));
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         setLocationRelativeTo(null);
 
-        new EditFileActions();
-        new StandardFileActions(this);
+        StandardFileActions.init(this);
 
         Menu menuBar = new Menu();
 
