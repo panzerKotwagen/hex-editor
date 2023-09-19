@@ -207,7 +207,7 @@ public class EditFileActions {
         if (byteBuffer == null || byteBuffer.length == 0) {
             return;
         }
-        hexEditor.insert(offset, byteBuffer);
+        hexEditor.add(offset, byteBuffer);
         tableModel.updateModel();
     }
 
