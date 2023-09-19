@@ -3,8 +3,14 @@ package gui.window;
 import gui.actions.EditFileActions;
 import gui.actions.StandardFileActions;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import java.awt.Dimension;
+import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Enumeration;

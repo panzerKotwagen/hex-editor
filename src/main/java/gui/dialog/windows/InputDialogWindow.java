@@ -3,8 +3,18 @@ package gui.dialog.windows;
 import gui.tables.InputTable;
 import gui.window.MainWindow;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.BorderFactory;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -77,6 +87,7 @@ public class InputDialogWindow extends JDialog {
 
     /**
      * Returns the block of bytes entered by the user.
+     *
      * @return byte array
      */
     public byte[] getData() {

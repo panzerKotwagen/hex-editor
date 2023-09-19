@@ -3,8 +3,11 @@ package gui.window;
 import editor.ByteSequence;
 import net.miginfocom.swing.MigLayout;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import java.awt.Color;
 import java.util.HashMap;
 
 /**

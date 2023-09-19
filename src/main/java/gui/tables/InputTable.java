@@ -1,8 +1,8 @@
 package gui.tables;
 
-import javax.swing.*;
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import java.awt.*;
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;

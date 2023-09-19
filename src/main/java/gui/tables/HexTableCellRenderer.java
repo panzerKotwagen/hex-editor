@@ -1,8 +1,9 @@
 package gui.tables;
 
-import javax.swing.*;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Color;
 
 /**
  * The model for visually displaying the cell selection in a table

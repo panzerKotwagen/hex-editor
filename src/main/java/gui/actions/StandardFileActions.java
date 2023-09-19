@@ -5,9 +5,15 @@ import gui.tables.HexTable;
 import gui.tables.HexTableModel;
 import gui.window.MainWindow;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
+import javax.swing.JOptionPane;
+import java.awt.FileDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentAdapter;
 
 /**
  * The class that provides file operations: open, close, save, exit
@@ -117,8 +123,10 @@ public class StandardFileActions {
 
         saveAsNewAct.putValue(
                 StandardFileAction.ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                        InputEvent.SHIFT_DOWN_MASK + InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_S,
+                        InputEvent.SHIFT_DOWN_MASK
+                                + InputEvent.CTRL_DOWN_MASK));
 
         // The actions are not available until a file is opened
         unblockFileButtons();

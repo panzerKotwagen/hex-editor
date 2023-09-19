@@ -6,9 +6,16 @@ import gui.tables.HexTable;
 import gui.tables.HexTableModel;
 import gui.window.MainWindow;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
+import javax.swing.JOptionPane;
+import java.awt.Adjustable;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 
 /**
  * The class that provides file editing operations (cut, copy, paste, etc.)
@@ -278,6 +285,7 @@ public class EditFileActions {
 
     /**
      * Selects the specified cell.
+     *
      * @param row row index
      * @param col column index
      */
@@ -290,6 +298,7 @@ public class EditFileActions {
 
     /**
      * Scrolls window to specified cell.
+     *
      * @param row row index
      * @param col column index
      */
@@ -381,9 +390,13 @@ public class EditFileActions {
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
 
-            if ((offset != -1) && ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
+            if (offset == -1)
+                return;
+
+            if  ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
                     || (KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9)
-                    || KeyEvent.VK_NUMPAD0 <= keyCode && keyCode <= KeyEvent.VK_NUMPAD9)) {
+                    || (KeyEvent.VK_NUMPAD0 <= keyCode
+                    && keyCode <= KeyEvent.VK_NUMPAD9)) {
 
                 byte b = getNum(e.getKeyChar());
                 hexEditor.insert(offset, b);

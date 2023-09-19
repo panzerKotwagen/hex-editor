@@ -3,7 +3,8 @@ package gui.window;
 import gui.actions.EditFileActions;
 import gui.actions.StandardFileActions;
 
-import javax.swing.*;
+import javax.swing.JToolBar;
+import javax.swing.JButton;
 
 public class Toolbar extends JToolBar {
     /**
