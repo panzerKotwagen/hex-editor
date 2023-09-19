@@ -20,11 +20,6 @@ public class InputDialogWindow extends JDialog {
     private byte[] data;
 
     /**
-     * The label placed
-     */
-    private JLabel label;
-
-    /**
      * The button which performs the action.
      */
     private JButton btnDo;
@@ -50,6 +45,11 @@ public class InputDialogWindow extends JDialog {
     private JScrollPane panelTable;
 
     /**
+     * The table displayed in the window.
+     */
+    private InputTable table;
+
+    /**
      * Constructs the dialog window.
      */
     public InputDialogWindow(JFrame owner, String name) {
@@ -63,20 +63,40 @@ public class InputDialogWindow extends JDialog {
 
         this.setResizable(false);
 
-        InputTable table = new InputTable();
+        makeLabelPanel();
+        makeTablePanel();
+        makeButtonPanel();
 
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        this.add(panelLabel, BorderLayout.NORTH);
+        this.add(panelTable, BorderLayout.CENTER);
+        this.add(panelButtons, BorderLayout.SOUTH);
 
+        this.setVisible(true);
+        this.dispose();
+    }
+
+    /**
+     * Returns the block of bytes entered by the user.
+     * @return byte array
+     */
+    public byte[] getData() {
+        return data;
+    }
+
+    /**
+     * Creates the panel that contains the label.
+     */
+    private void makeLabelPanel() {
         panelLabel = new JPanel(new FlowLayout());
+        panelLabel.add(new JLabel("Input the bytes"));
+    }
 
-        panelLabel.add(label = new JLabel("Input the bytes"));
-
-        panelTable = new JScrollPane(table);
-
+    /**
+     * Constructs the panel with the buttons.
+     */
+    private void makeButtonPanel() {
         panelButtons = new JPanel(new FlowLayout());
-
         panelButtons.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panelTable.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         btnDo = new JButton("Do");
         btnCancel = new JButton("Cancel");
@@ -88,6 +108,20 @@ public class InputDialogWindow extends JDialog {
 
         btnCancel.addActionListener(e -> this.setVisible(false));
 
+        panelButtons.add(btnDo);
+        panelButtons.add(btnCancel);
+    }
+
+    /**
+     * Constructs the panel that contains the table.
+     */
+    private void makeTablePanel() {
+        table = new InputTable();
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        panelTable = new JScrollPane(table);
+        panelTable.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
         table.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -97,23 +131,5 @@ public class InputDialogWindow extends JDialog {
                     btnCancel.doClick();
             }
         });
-
-        panelButtons.add(btnDo);
-        panelButtons.add(btnCancel);
-
-        this.add(panelLabel, BorderLayout.NORTH);
-        this.add(panelTable, BorderLayout.CENTER);
-        this.add(panelButtons, BorderLayout.SOUTH);
-
-        this.show();
-        this.dispose();
-    }
-
-    /**
-     * Returns the block of bytes entered by the user.
-     * @return byte array
-     */
-    public byte[] getData() {
-        return data;
     }
 }

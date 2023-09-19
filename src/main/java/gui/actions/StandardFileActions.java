@@ -213,7 +213,9 @@ public class StandardFileActions {
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                frame.decodePanel.fillPane(table.getByteSequence());
+                if (table.getEndOffset() < hexEditor.getFileSize()) {
+                    frame.decodePanel.fillPane(table.getByteSequence());
+                }
             }
         });
 
@@ -262,9 +264,9 @@ public class StandardFileActions {
     /**
      * Opens the file manager window to save the file as new one.
      */
-    private static boolean saveAsNewFile() {
+    private static void saveAsNewFile() {
         if (!fileIsOpened)
-            return false;
+            return;
 
         FileDialog fd = new FileDialog(frame, "Save the file", FileDialog.SAVE);
         fd.setVisible(true);
@@ -273,9 +275,9 @@ public class StandardFileActions {
         String filename = fd.getFile();
 
         if (filename == null)
-            return false;
+            return;
 
-        return hexEditor.saveAsNewFile(dir + filename);
+        hexEditor.saveAsNewFile(dir + filename);
     }
 
     /**

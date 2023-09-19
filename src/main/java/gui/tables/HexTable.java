@@ -3,12 +3,14 @@ package gui.tables;
 import editor.ByteSequence;
 import editor.HexEditor;
 
-import javax.swing.*;
-import java.awt.*;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import java.awt.Dimension;
 
 /**
- * Describes the table to display the contents of a file in binary
- * format.
+ * Describes the table with dynamic column count to display the
+ * contents of a file in binary format.
  */
 public class HexTable extends JTable {
 
@@ -39,13 +41,20 @@ public class HexTable extends JTable {
     public int selectedColIndexEnd;
 
     /**
-     * Constructs a HexTable that is initialized with tableModel as
+     * The HexTableModel of the table.
+     */
+    private final HexTableModel tableModel;
+
+    /**
+     * Constructs a HexTable that is initialized with HexTableModel as
      * the data model.
      *
      * @param tableModel the data model for the table
      */
     public HexTable(HexTableModel tableModel) {
         super(tableModel);
+
+        this.tableModel = tableModel;
 
         setRowHeight(40);
 
@@ -114,7 +123,6 @@ public class HexTable extends JTable {
             this.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         }
 
-        HexTableModel tableModel = (HexTableModel) this.getModel();
         tableModel.setColumnCount(newColumnCount);
 
         setColumnsWidth();
@@ -148,24 +156,7 @@ public class HexTable extends JTable {
      * cell then returns sequence of less length.
      */
     public ByteSequence getByteSequence() {
-        byte[] array = new byte[8];
-        HexTableModel tableModel = (HexTableModel) this.getModel();
-
-        for (int i = 0; i < 8; i++) {
-            try {
-                int index = tableModel.getIndex(
-                        this.selectedRowIndexEnd,
-                        this.selectedColIndexEnd + i);
-                array[i] = tableModel.getValueByIndex(index);
-            }
-            // If the number of bytes in the file starting from the
-            // selected position is less than 8
-            catch (IndexOutOfBoundsException e) {
-                break;
-            }
-        }
-
-        return new ByteSequence(array);
+        return tableModel.getByteSequence(getEndOffset());
     }
 
     /**
@@ -173,10 +164,27 @@ public class HexTable extends JTable {
      * and selection the offset column.
      */
     @Override
-    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+    public void changeSelection(int rowIndex, int columnIndex,
+                                boolean toggle, boolean extend) {
         if (columnIndex == 0)
             return;
         super.changeSelection(rowIndex, columnIndex, false, extend);
+    }
+
+    /**
+     * Returns the byte offset in the file that is corresponds to the
+     * anchor selected cell.
+     */
+    public int getStartOffset() {
+        return tableModel.getOffset(selectedRowIndexStart, selectedColIndexStart);
+    }
+
+    /**
+     * Returns the byte offset in the file that is corresponds to the
+     * lead selected cell.
+     */
+    public int getEndOffset() {
+        return tableModel.getOffset(selectedRowIndexEnd, selectedColIndexEnd);
     }
 }
 

@@ -56,7 +56,8 @@ public class EditFileActions {
     private static HexEditor hexEditor;
 
     /**
-     * The byte offset which corresponds to the anchor selected cell.
+     * The byte offset in the file which corresponds to the anchor
+     * selected cell.
      */
     private static int offset = 0;
 
@@ -137,7 +138,8 @@ public class EditFileActions {
      * @param hex        the file to edit
      * @param win        the main application window
      */
-    public static void init(HexTable hexTable, HexTableModel tableModel, HexEditor hex, MainWindow win) {
+    public static void init(HexTable hexTable, HexTableModel tableModel,
+                            HexEditor hex, MainWindow win) {
         EditFileActions.hexTable = hexTable;
         hexTable.addKeyListener(new CellInput());
         EditFileActions.tableModel = tableModel;
@@ -165,8 +167,8 @@ public class EditFileActions {
      * table.
      */
     private static void updateSelection() {
-        int start = tableModel.getIndex(hexTable.selectedRowIndexStart, hexTable.selectedColIndexStart);
-        int end = tableModel.getIndex(hexTable.selectedRowIndexEnd, hexTable.selectedColIndexEnd);
+        int start = hexTable.getStartOffset();
+        int end = hexTable.getEndOffset();
 
         offset = Math.min(start, end);
         end = Math.max(start, end);
@@ -208,7 +210,7 @@ public class EditFileActions {
     }
 
     /**
-     * Opens the dialog box for entering bytes inserted into the
+     * Opens the dialog window for entering bytes inserted into the
      * selected position with the replacement.
      */
     private static void insert() {
@@ -223,7 +225,7 @@ public class EditFileActions {
     }
 
     /**
-     * Opens the dialog box for entering bytes inserted into the
+     * Opens the dialog window for entering bytes inserted into the
      * selected position with the rest offset to the right.
      */
     private static void add() {
@@ -246,7 +248,7 @@ public class EditFileActions {
     }
 
     /**
-     * Opens the dialog box for entering bytes to search in the file.
+     * Opens the dialog window for entering bytes to search in the file.
      * Highlights the cell from which the match begins or displays the
      * message that the specified sequence has not been found.
      */
@@ -282,7 +284,8 @@ public class EditFileActions {
     private static void highlightCell(int row, int col) {
         // Select the found cell
         hexTable.getSelectionModel().addSelectionInterval(row, row);
-        hexTable.getColumnModel().getSelectionModel().setSelectionInterval(col, col);
+        hexTable.getColumnModel()
+                .getSelectionModel().setSelectionInterval(col, col);
     }
 
     /**
@@ -369,10 +372,7 @@ public class EditFileActions {
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     num.delete(0, num.length());
-
-                    offset = tableModel.getIndex(
-                            hexTable.selectedRowIndexEnd,
-                            hexTable.selectedColIndexEnd);
+                    offset = hexTable.getEndOffset();
                 }
             });
         }

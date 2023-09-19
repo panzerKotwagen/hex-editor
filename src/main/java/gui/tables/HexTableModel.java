@@ -1,5 +1,6 @@
 package gui.tables;
 
+import editor.ByteSequence;
 import editor.HexEditor;
 
 import javax.swing.table.AbstractTableModel;
@@ -56,7 +57,9 @@ public class HexTableModel extends AbstractTableModel {
     public int getRowCount() {
         if (hexEditor == null)
             return 0;
-        return (int) Math.ceil((double) hexEditor.getFileSize() / (getColumnCount() - 1));
+        return (int) Math.ceil(
+                (double) hexEditor.getFileSize() / (getColumnCount() - 1)
+        );
     }
 
     /**
@@ -83,7 +86,7 @@ public class HexTableModel extends AbstractTableModel {
 
     /**
      * Returns the string represent of the byte value at the specified
-     * cell. If there is no byte at the given position return empty string.
+     * cell. If there is no byte at the given position returns empty string.
      * If the columnIndex equals to 0 return calculated offset
      * which value depends on current column count in the model.
      *
@@ -98,7 +101,7 @@ public class HexTableModel extends AbstractTableModel {
             return String.format("%08X", rowIndex * (getColumnCount() - 1));
         }
 
-        int index = getIndex(rowIndex, columnIndex);
+        int index = getOffset(rowIndex, columnIndex);
         if (index >= bufferSize + offset || index < offset) {
             offset = index - index % bufferSize;
             buffer = hexEditor.read(offset, bufferSize);
@@ -164,35 +167,18 @@ public class HexTableModel extends AbstractTableModel {
      */
     @Override
     public boolean isCellEditable(int row, int column) {
-        if (column == 0)
-            return false;
-
-        return super.isCellEditable(row, column);
+        return false;
     }
 
     /**
-     * Returns the byte value from model data at the specified index
-     * as if the whole file content was stored in one array. In other
-     * words, returns the byte at the specified position from the file.
-     *
-     * @param index byte index
-     * @return the byte value at the specified index
-     */
-    public byte getValueByIndex(int index) {
-        return buffer[index - offset];
-    }
-
-    /**
-     * Returns the byte index as if the whole file content
-     * was stored in one array. It is the same as getting the index
-     * of a one-dimensional array, which is represented as
-     * two-dimensional.
+     * Returns the byte offset in the file by row and column number
+     * of the cell.
      *
      * @param rowIndex    row index of the cell
      * @param columnIndex column index of the cell
-     * @return the fake byte index
+     * @return the byte offset
      */
-    public int getIndex(int rowIndex, int columnIndex) {
+    public int getOffset(int rowIndex, int columnIndex) {
         return rowIndex * (getColumnCount() - 1) + columnIndex - 1;
     }
 
@@ -202,5 +188,15 @@ public class HexTableModel extends AbstractTableModel {
     public void updateModel() {
         buffer = hexEditor.read(offset, bufferSize);
         fireTableDataChanged();
+    }
+
+    /**
+     * Returns the ByteSequence of length 8 which filling with the
+     * bytes starting from the specified offset. If there are no
+     * enough bytes to the right of the offset position then returns
+     * sequence of less length.
+     */
+    public ByteSequence getByteSequence(long offset) {
+        return new ByteSequence(hexEditor.read(offset, 8));
     }
 }
