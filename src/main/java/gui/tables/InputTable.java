@@ -4,7 +4,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -65,7 +64,7 @@ public class InputTable extends JTable {
         /**
          * The list to store inputted bytes.
          */
-        private ArrayList<Byte> data = new ArrayList<>();
+        private final ArrayList<Byte> data = new ArrayList<>();
 
         /**
          * Return fixed row count.

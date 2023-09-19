@@ -89,6 +89,7 @@ public class StandardFileActions {
                 case "Exit":
                     exit();
                     break;
+                default:
             }
         }
     }
@@ -151,15 +152,18 @@ public class StandardFileActions {
      * @return false if the cancel was pressed, true otherwise
      */
     private static boolean maybeSave() {
-        if (!fileIsOpened)
+        if (!fileIsOpened) {
             return true;
+        }
 
         int response = JOptionPane.showConfirmDialog(
                 frame, "Do you want to save changes?");
 
         if (response == JOptionPane.YES_OPTION) {
             return saveFile();
-        } else return response != JOptionPane.CANCEL_OPTION;
+        } else {
+            return response != JOptionPane.CANCEL_OPTION;
+        }
     }
 
     /**
@@ -178,10 +182,11 @@ public class StandardFileActions {
         String dir = fd.getDirectory();
         String filename = fd.getFile();
 
-        if (filename == null)
+        if (filename == null) {
             return null;
-        else
+        } else {
             return dir + filename;
+        }
     }
 
     /**
@@ -196,12 +201,12 @@ public class StandardFileActions {
 
         String path = maybeOpen();
 
-        if (path == null)
+        if (path == null) {
             return;
-
-        if (fileIsOpened)
+        }
+        if (fileIsOpened) {
             hexEditor.closeFile();
-
+        }
         hexEditor.openFile(path);
 
         fileIsOpened = true;
@@ -220,15 +225,25 @@ public class StandardFileActions {
 
         table.updateTableView(frame.getBounds().width);
 
+        // By clicking the mouse button on the cell, the
+        // ByteRepresentPanel is filled in.
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
+
+                // If user clicked on the offset column
+                if (table.columnAtPoint(evt.getPoint()) == 0) {
+                    return;
+                }
+
+                // Checking that the cell is not empty
                 if (table.getEndOffset() < hexEditor.getFileSize()) {
                     frame.decodePanel.fillPane(table.getByteSequence());
                 }
             }
         });
 
+        // "Binds" editing actions to the table, file and frame
         EditFileActions.init(table, hexEditor, frame);
 
         // Monitors the window resizing events for the table redrawing
@@ -271,8 +286,9 @@ public class StandardFileActions {
      * Opens the file manager window to save the file as new one.
      */
     private static void saveAsNewFile() {
-        if (!fileIsOpened)
+        if (!fileIsOpened) {
             return;
+        }
 
         FileDialog fd = new FileDialog(
                 frame, "Save the file", FileDialog.SAVE);
@@ -281,8 +297,9 @@ public class StandardFileActions {
         String dir = fd.getDirectory();
         String filename = fd.getFile();
 
-        if (filename == null)
+        if (filename == null) {
             return;
+        }
 
         hexEditor.saveAsNewFile(dir + filename);
     }

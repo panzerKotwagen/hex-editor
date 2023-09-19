@@ -182,9 +182,9 @@ public class EditFileActions {
      * Copies the selected byte block to the buffer.
      */
     private static boolean copy() {
-        if (count >= maxBufferSize)
+        if (count >= maxBufferSize) {
             return false;
-
+        }
         byteBuffer = hexEditor.read(offset, count);
         return byteBuffer != null;
     }
@@ -204,9 +204,9 @@ public class EditFileActions {
      * selected cell with replacement.
      */
     private static void paste() {
-        if (byteBuffer == null || byteBuffer.length == 0)
+        if (byteBuffer == null || byteBuffer.length == 0) {
             return;
-
+        }
         hexEditor.insert(offset, byteBuffer);
         tableModel.updateModel();
     }
@@ -219,9 +219,9 @@ public class EditFileActions {
         InputDialogWindow win = new InputDialogWindow(frame, "Insert");
         byte[] bytes = win.getData();
 
-        if (bytes == null || bytes.length == 0)
+        if (bytes == null || bytes.length == 0) {
             return;
-
+        }
         hexEditor.insert(offset, bytes);
         tableModel.updateModel();
     }
@@ -234,9 +234,9 @@ public class EditFileActions {
         InputDialogWindow win = new InputDialogWindow(frame, "Add");
         byte[] bytes = win.getData();
 
-        if (bytes == null || bytes.length == 0)
+        if (bytes == null || bytes.length == 0) {
             return;
-
+        }
         hexEditor.add(offset, bytes);
         tableModel.updateModel();
     }

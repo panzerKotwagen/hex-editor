@@ -12,7 +12,7 @@ import javax.swing.table.AbstractTableModel;
 public class HexTableModel extends AbstractTableModel {
 
     /**
-     * The file data is partially saved in buffer.
+     * The buffer size in which file data is saved.
      */
     private final int bufferSize = 1024;
 
@@ -55,11 +55,11 @@ public class HexTableModel extends AbstractTableModel {
      */
     @Override
     public int getRowCount() {
-        if (hexEditor == null)
+        if (hexEditor == null) {
             return 0;
+        }
         return (int) Math.ceil(
-                (double) hexEditor.getFileSize() / (getColumnCount() - 1)
-        );
+                (double) hexEditor.getFileSize() / (getColumnCount() - 1));
     }
 
     /**

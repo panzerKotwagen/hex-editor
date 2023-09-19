@@ -23,11 +23,10 @@ public class HexTableCellRenderer extends DefaultTableCellRenderer {
                 table, obj, isSelected, hasFocus, row, column);
 
         HexTable hexTable = (HexTable) table;
-        HexTableModel tableModel = hexTable.getModel();
 
         int start = hexTable.getStartOffset();
         int end = hexTable.getEndOffset();
-        int cellOffset = tableModel.getOffset(row, column);
+        int cellOffset = hexTable.getModel().getOffset(row, column);
 
         if (cellOffset >= Math.min(start, end)
                 && cellOffset <= Math.max(start, end)) {

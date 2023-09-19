@@ -93,8 +93,9 @@ public class HexTable extends JTable {
     @Override
     public void changeSelection(int rowIndex, int columnIndex,
                                 boolean toggle, boolean extend) {
-        if (columnIndex == 0)
+        if (columnIndex == 0) {
             return;
+        }
         super.changeSelection(rowIndex, columnIndex, false, extend);
     }
 
@@ -147,9 +148,9 @@ public class HexTable extends JTable {
         int newColumnCount = (frameWidth - OFFSET_COLUMN_WIDTH - SCROLL_BAR_WIDTH)
                 / BYTE_COLUMN_WIDTH;
 
-        if (newColumnCount == this.getColumnCount())
+        if (newColumnCount == this.getColumnCount()) {
             return;
-
+        }
         if (newColumnCount < 16) {
             newColumnCount = 16;
             this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
