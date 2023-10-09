@@ -1,6 +1,7 @@
 package gui.actions;
 
 import editor.HexEditor;
+import editor.impl.HexEditorImpl;
 import gui.tables.HexTable;
 import gui.window.MainWindow;
 
@@ -52,7 +53,7 @@ public class StandardFileActions {
      */
     public static void init(MainWindow frame) {
         StandardFileActions.frame = frame;
-        StandardFileActions.hexEditor = new HexEditor();
+        StandardFileActions.hexEditor = new HexEditorImpl();
     }
 
     /**

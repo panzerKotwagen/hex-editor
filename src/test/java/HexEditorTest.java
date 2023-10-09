@@ -1,4 +1,5 @@
 import editor.HexEditor;
+import editor.impl.HexEditorImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -6,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HexEditorTest {
-    HexEditor hexEditor = new HexEditor();
+    HexEditor hexEditor = new HexEditorImpl();
 
     @AfterEach
     void closeFile() {
