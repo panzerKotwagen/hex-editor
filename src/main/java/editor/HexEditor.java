@@ -1,5 +1,6 @@
 package editor;
 
+import editor.impl.ByteSequenceImpl;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
@@ -227,7 +228,7 @@ public class HexEditor {
 
         while ((readBytes = read(offset, BUFFER_SIZE)) != null) {
             try {
-                res = ByteSequence.find(mask, readBytes);
+                res = ByteSequenceImpl.find(mask, readBytes);
             } catch (NullPointerException e) {
                 e.printStackTrace();
                 return -1;

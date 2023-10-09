@@ -2,6 +2,7 @@ package gui.tables;
 
 import editor.ByteSequence;
 import editor.HexEditor;
+import editor.impl.ByteSequenceImpl;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -197,6 +198,6 @@ public class HexTableModel extends AbstractTableModel {
      * sequence of less length.
      */
     public ByteSequence getByteSequence(long offset) {
-        return new ByteSequence(hexEditor.read(offset, 8));
+        return new ByteSequenceImpl(hexEditor.read(offset, 8));
     }
 }
