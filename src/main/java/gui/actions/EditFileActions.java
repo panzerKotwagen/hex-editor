@@ -326,8 +326,16 @@ public class EditFileActions {
             String comStr = e.getActionCommand();
             updateSelection();
 
-            if (offset < 0 || count < 0)
-                return;
+            // If user hasn't selected any cells
+            if (offset < 0 || count < 0) {
+                if (comStr.equals("Find")) {
+                    // Sets the find position from the file beginning
+                    offset = 0;
+                }
+                else {
+                    return;
+                }
+            }
 
             switch (comStr) {
                 case "Cut":
