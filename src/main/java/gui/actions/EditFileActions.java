@@ -393,7 +393,7 @@ public class EditFileActions {
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
 
-            if (offset == -1)
+            if (offset == -1 || e.isAltDown() || e.isControlDown())
                 return;
 
             if  ((KeyEvent.VK_A <= keyCode && keyCode <= KeyEvent.VK_F)
