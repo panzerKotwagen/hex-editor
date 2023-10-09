@@ -148,8 +148,6 @@ public class HexEditor {
                 buffer.get(readBytes, readBytes.length - count, buffer.limit());
 
                 count -= buffer.limit();
-                if (offset > 1040000)
-                    System.out.println();
                 offset += buffer.limit();
 
                 buffer.clear();
